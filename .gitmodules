@@ -1,0 +1,3 @@
+[submodule "vim/plugged/ale"]
+	path = vim/plugged/ale
+	url = https://github.com/dense-analysis/ale.git
