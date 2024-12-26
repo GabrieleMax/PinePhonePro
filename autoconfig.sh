@@ -1,13 +1,14 @@
 #!/bin/bash
 ## Last update 26/12/2024 ##                                   
-## Before to start the script connect the device by usb to the laptop
+## Before to start the script connect the device by usb to the pc\laptop
 
 FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')                                                                
 # Url of the website with image links
 url="https://images.mobian-project.org/pinephonepro/installer/weekly/"
+arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
 
 # Show the initial message
-echo "Connect the Pine Phone pro:"
+echo "Connect the Pine Phone pro and press vol+ untill you'll see the blu led:"
 
 # Save the initial output of lsblk, excluding partitions
 initial_devices=$(lsblk -dn -o NAME | sort)
@@ -32,7 +33,7 @@ while true; do
 done
 
 # Now you can use the $device_name variable
-echo "The connected device is: $device_name"
+echo "The connected device is: /dev/$device_name"
 
 # Recover the list of files from the website
 deb_testing_posh=$(wget -q -O - "$url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
@@ -66,10 +67,10 @@ arch_img_testing_posh() {
     # Get the latest Arch PinePhone Pro image with Phosh
     arch_testing=$(wget -q -O - "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 
-    if [ -n "$arch_testing_posh" ]; then
-        echo "Most recent Arch image found: $arch_testing_posh"
-        wget --progress=dot "$arch_url$arch_testing_posh" -O "/tmp/image.xz"
-        echo "Download finished: $arch_testing_posh"
+    if [ -n "$arch_testing" ]; then
+        echo "Most recent Arch image found: $arch_testing"
+        wget --progress=dot "$arch_url$arch_testing" -O "/tmp/image.xz"
+        echo "Download finished: $arch_testing"
     else
         echo "Arch image not found."
     fi
@@ -77,17 +78,26 @@ arch_img_testing_posh() {
 
 # Function for the image burn process
 img_burn() {
-    bash -c '\
-    echo "The disk that will be erased is /dev/$new_device"; \
-    pv "/tmp/image.xz" | unxz -c > /tmp/image.img
-    sudo dd if=/tmp/image.img of=/dev/$new_device bs=4M status=progress conv=noerror,sync
-    '
+    # Check if device_name is set and not empty
+    if [ -z "$device_name" ]; then
+        echo "Device name is not set. Exiting."
+        exit 1
+    fi
+
+    # Confirm the device to burn to
+    echo "The disk that will be erased is /dev/$device_name"
+
+    # Burn the image to the device
+    cat "/tmp/image.xz" | unxz -c > /tmp/image.img
+    sudo dd if=/tmp/image.img of=/dev/$device_name bs=4M status=progress conv=noerror,sync
+    echo "Burn process finished."
 }
 
 # Menu with correct options
 PS3="Choose an option (1-4): "
 select menu in "Download and install Debian testing with Plasma mobile" \
                "Download and install Debian testing with Phosh mobile" \
+               "Download and install Arch Linux with Phosh" \
                "Image burn" \
                "Exit"; do
     case $menu in
@@ -96,6 +106,9 @@ select menu in "Download and install Debian testing with Plasma mobile" \
             ;;
         "Download and install Debian testing with Phosh mobile")
             deb_img_testing_posh
+            ;;
+        "Download and install Arch Linux with Phosh")
+            arch_img_testing_posh
             ;;
         "Image burn")
             img_burn
