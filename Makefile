@@ -169,6 +169,12 @@ install_posh: apt software_common software_posh social time locale disablesuspen
 	apt-get dist-upgrade -y
 	reboot
 
+secure:
+	systemctl stop ssh.service
+	systemctl disable ssh.service
+	systemctl disable --now ssh.service
+	systemctl daemon-reload
+
 ## Second step, deploy to the phone
 deploy:
 	@bash -c ' \
