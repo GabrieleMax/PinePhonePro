@@ -25,7 +25,7 @@ if [ -n "$deb_testing_posh" ]; then
     echo "File founded: $deb_testing_posh"
     
     # Download the file
-    wget --progress=dot "$url$deb_testing_posh" -O "/tmp/$deb_testing_posh"
+    wget --progress=dot "$url$deb_testing_posh" -O "/tmp/image.xz"
     echo "Download finished: $deb_testing_posh"
 else
     echo "File not found."
@@ -39,7 +39,7 @@ if [ -n "$deb_testing_plasma" ]; then
     echo "File più recente trovato: $deb_testing_plasma"
     
     # Download the file
-    wget --progress=dot "$url$deb_testing_plasma" -O "/tmp/$deb_testing_plasma"
+    wget --progress=dot "$url$deb_testing_plasma" -O "/tmp/image.xz"
     echo "Download finished: $deb_testing_plasma"
 else
     echo "File not found."
@@ -60,8 +60,8 @@ img_burn() {
   # Deactive LUKS volumes \
   #cryptsetup luksClose /dev/$diskname || true; \
   '
-  pv "$MOBIANIMG" | unxz -c > /tmp/mobian-installer.img
-  sudo dd if=/tmp/mobian-installer.img of=/dev/sdb bs=4M status=progress conv=noerror,sync
+  pv "/tmp/image.xz" | unxz -c > /tmp/image.img
+  sudo dd if=/tmp/image.img of=/dev/sdb bs=4M status=progress conv=noerror,sync
 }          
 
 # Verifica se è stato trovato un file
