@@ -1,116 +1,96 @@
 #!/bin/bash
-## Last update 22/12/2024 ##                                   
+## Last update 26/12/2024 ##                                   
 ## Before to start the script connect the device by usb to the laptop
 
 FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')                                                                
-DEVICE=/dev/mmcblk1
-LAYOUT=it
-#UUID=$(blkid -s UUID -o value /dev/mmcblk1p1)
-#MOBIANIMG=$(find /tmp/ -iname "*mobian-installer*.xz" | grep -v "/\.local/")
 # Url of the website with image links
 url="https://images.mobian-project.org/pinephonepro/installer/weekly/"
 
+# Show the initial message
+echo "Connect the device"
+
+# Save the initial output of lsblk, excluding partitions
+initial_devices=$(lsblk -dn -o NAME | sort)
+
+# Continuously monitor for a new device
+while true; do
+    # Save the current output of lsblk, excluding partitions
+    current_devices=$(lsblk -dn -o NAME | sort)
+
+    # Compare the current output with the initial one
+    new_device=$(comm -13 <(echo "$initial_devices") <(echo "$current_devices"))
+
+    # If a new device is found, perform the desired action
+    if [ -n "$new_device" ]; then
+        echo "New device connected: $new_device"
+        device_name="$new_device"  # Assign the device name to a variable
+        break  # Exit the loop
+    fi
+
+    # Pause to avoid consuming too much CPU
+    sleep 1
+done
+
+# Now you can use the $device_name variable
+echo "The connected device is: $device_name"
+
 # Recover the list of files from the website
-# wget -q is quiet option, -O output file but - means the output file content is tranfered to the pipe |
-# grep -o will print just the searche pattern -P is pearl regex and \d{8} means eight numbers
-# sort -r the first line will be the latest
-# head -n 1 shows just the first line
 deb_testing_posh=$(wget -q -O - "$url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 deb_testing_plasma=$(wget -q -O - "$url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.xz' | sort -r | head -n 1)
 
-# Mobian testing posh image download
+# Function to download the Mobian image with Phosh
 deb_img_testing_posh() {
-    # If the variable is not empty starts the script.
-if [ -n "$deb_testing_posh" ]; then
-    echo "File founded: $deb_testing_posh"
-    
-    # Download the file
-    wget --progress=dot "$url$deb_testing_posh" -O "/tmp/image.xz"
-    echo "Download finished: $deb_testing_posh"
-else
-    echo "File not found."
-fi
+    if [ -n "$deb_testing_posh" ]; then
+        echo "File found: $deb_testing_posh"
+        wget --progress=dot "$url$deb_testing_posh" -O "/tmp/image.xz"
+        echo "Download finished: $deb_testing_posh"
+    else
+        echo "File not found."
+    fi
 }
 
-# Mobian testing plasma image download
+# Function to download the Mobian image with Plasma
 deb_img_testing_plasma() {
-    # If the variable is not empty starts the script.
-if [ -n "$deb_testing_plasma" ]; then
-    echo "File più recente trovato: $deb_testing_plasma"
-    
-    # Download the file
-    wget --progress=dot "$url$deb_testing_plasma" -O "/tmp/image.xz"
-    echo "Download finished: $deb_testing_plasma"
-else
-    echo "File not found."
-fi
+    if [ -n "$deb_testing_plasma" ]; then
+        echo "Most recent file found: $deb_testing_plasma"
+        wget --progress=dot "$url$deb_testing_plasma" -O "/tmp/image.xz"
+        echo "Download finished: $deb_testing_plasma"
+    else
+        echo "File not found."
+    fi
 }
 
-# Image burn
+# Function for the image burn process
 img_burn() {
-  lsblk
-  bash -c '\
-  read -p "Insert the name of the disk which will be erased (e.g., sdb): " diskname; \
-  echo "The disk which will be erased is /dev/$diskname"; \
-  echo "The diskname is $diskname"; \
-  # Umount all disk partitions \
-  #for part in $(lsblk -no NAME,MOUNTPOINT | grep "/dev/$diskname" | awk "{print $1}"); do \
-  # umount /dev/$part || true; \
-  #done; \
-  # Deactive LUKS volumes \
-  #cryptsetup luksClose /dev/$diskname || true; \
-  '
-  pv "/tmp/image.xz" | unxz -c > /tmp/image.img
-  sudo dd if=/tmp/image.img of=/dev/sdb bs=4M status=progress conv=noerror,sync
-}          
-
-# Verifica se è stato trovato un file
-if [ -n "$latest_file" ]; then
-    echo "File più recente trovato: $latest_file"
-    
-    # Scarica il file
-    wget --progress=dot "$url$latest_file" -O "/tmp/$latest_file"
-    echo "Download completato: $latest_file"
-else
-    echo "Nessun file trovato."
-fi
-
-# Funzione per scaricare l'immagine
-scarica_immagine() {
-    echo "Scaricamento dell'immagine..."
-    # Aggiungi qui il comando per scaricare l'immagine, ad esempio:
-    # wget http://esempio.com/immagine.iso
+    bash -c '\
+    echo "The disk that will be erased is /dev/$new_device"; \
+    pv "/tmp/image.xz" | unxz -c > /tmp/image.img
+    sudo dd if=/tmp/image.img of=/dev/$new_device bs=4M status=progress conv=noerror,sync
+    '
 }
 
-# Funzione per visualizzare informazioni
-visualizza_info() {
-    echo "Visualizzazione delle informazioni..."
-    # Aggiungi qui il comando per visualizzare le informazioni, ad esempio:
-    # df -h
-}
-
-# Menu
-PS3="Scegli un'opzione (1-3): "
+# Menu with correct options
+PS3="Choose an option (1-4): "
 select menu in "Download and install Debian testing with Plasma mobile" \
-               "Download and install Debian testing with Posh mobile" \
+               "Download and install Debian testing with Phosh mobile" \
                "Image burn" \
-               "Esci"; do
+               "Exit"; do
     case $menu in
         "Download and install Debian testing with Plasma mobile")
-            deb_img_testing_plasma img_burn
+            deb_img_testing_plasma
             ;;
-        "Scarica immagine")
-            deb_img_testing_posh img_burn
+        "Download and install Debian testing with Phosh mobile")
+            deb_img_testing_posh
             ;;
         "Image burn")
             img_burn
             ;;
-        "Esci")
-            echo "Uscita dallo script."
+        "Exit")
+            echo "Exiting the script."
             break
             ;;
         *)
-            echo "Scelta non valida. Riprova."
+            echo "Invalid choice. Please try again."
             ;;
     esac
 done

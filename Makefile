@@ -9,28 +9,10 @@ FIRSTUSER=$(shell grep "1000" /etc/passwd | awk -F ':' '{print $$1}')
 DEVICE=/dev/mmcblk1
 LAYOUT=it
 UUID=$(shell blkid -s UUID -o value /dev/mmcblk1p1)
-MOBIANIMG=$(shell find /tmp/ -iname "*mobian-installer*.xz" | grep -v "/\.local/")
+#MOBIANIMG=$(shell find /tmp/ -iname "*mobian-installer*.xz" | grep -v "/\.local/")
 
-img_download:
+img:
 	bash latestimgdownload.sh
-
-img_burn:
-	lsblk
-	@bash -c '\
-	read -p "Insert the name of the disk which will be erased (e.g., sdb): " diskname; \
-	echo "The disk which will be erased is /dev/$$diskname"; \
-	echo "The diskname is $$diskname"; \
-	# Umount all disk partitions \
-	#for part in $$(lsblk -no NAME,MOUNTPOINT | grep "/dev/$$diskname" | awk "{print $$1}"); do \
-	#	umount /dev/$$part || true; \
-	#done; \
-	# Deactive LUKS volumes \
-	#cryptsetup luksClose /dev/$$diskname || true; \
-	'
-	pv "$(MOBIANIMG)" | unxz -c > /tmp/mobian-installer.img
-	sudo dd if=/tmp/mobian-installer.img of=/dev/sdb bs=4M status=progress conv=noerror,sync
-
-install_img: img_download img_burn
 
 sudodisable:
 	sudo passwd root
