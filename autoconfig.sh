@@ -7,7 +7,7 @@ FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')
 url="https://images.mobian-project.org/pinephonepro/installer/weekly/"
 
 # Show the initial message
-echo "Connect the device"
+echo "Connect the Pine Phone pro:"
 
 # Save the initial output of lsblk, excluding partitions
 initial_devices=$(lsblk -dn -o NAME | sort)
@@ -37,8 +37,9 @@ echo "The connected device is: $device_name"
 # Recover the list of files from the website
 deb_testing_posh=$(wget -q -O - "$url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 deb_testing_plasma=$(wget -q -O - "$url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.xz' | sort -r | head -n 1)
+arch_testing_posh=$(wget -q -O - "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 
-# Function to download the Mobian image with Phosh
+# Function to download the Mobian image with Phosh for PinePhone Pro
 deb_img_testing_posh() {
     if [ -n "$deb_testing_posh" ]; then
         echo "File found: $deb_testing_posh"
@@ -49,7 +50,7 @@ deb_img_testing_posh() {
     fi
 }
 
-# Function to download the Mobian image with Plasma
+# Function to download the Mobian image with Plasma for PinePhone Pro
 deb_img_testing_plasma() {
     if [ -n "$deb_testing_plasma" ]; then
         echo "Most recent file found: $deb_testing_plasma"
@@ -57,6 +58,20 @@ deb_img_testing_plasma() {
         echo "Download finished: $deb_testing_plasma"
     else
         echo "File not found."
+    fi
+}
+
+# Function to download the latest Arch image for PinePhone Pro
+arch_img_testing_posh() {
+    # Get the latest Arch PinePhone Pro image with Phosh
+    arch_testing=$(wget -q -O - "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
+
+    if [ -n "$arch_testing_posh" ]; then
+        echo "Most recent Arch image found: $arch_testing_posh"
+        wget --progress=dot "$arch_url$arch_testing_posh" -O "/tmp/image.xz"
+        echo "Download finished: $arch_testing_posh"
+    else
+        echo "Arch image not found."
     fi
 }
 
