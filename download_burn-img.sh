@@ -8,7 +8,7 @@ FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')
 # URLs for different operating systems
 deb_testing_url="https://images.mobian-project.org/pinephonepro/installer/weekly/"
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
-kali_nethunter_url="lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1"
+kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
 
 # Display the initial message
 echo "Connect the PinePhone Pro (press vol+ until the LED turns blue):"
@@ -42,7 +42,9 @@ echo "The connected device is: /dev/$device_name"
 deb_testing_posh=$(wget -q -O - "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 deb_testing_plasma=$(wget -q -O - "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.xz' | sort -r | head -n 1)
 arch_testing_posh=$(wget -q -O - "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
-kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
+#kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}\.\d{2}-pinephonepro\.img\.xz' | sort -r | head -n 1)
+#kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
+kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
 
 # Function to download Debian testing image with Phosh for PinePhone Pro
 deb_img_testing_posh() {
@@ -86,9 +88,10 @@ arch_img_testing_posh() {
 # Function to download the latest Kali Nethunter image for PinePhone Pro
 kali_nethunter_posh_img() {
     echo "Trying to download the Kali Nethunter image..."
+    kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
     if [ -n "$kali_nethunter" ]; then
         echo "Latest Kali Nethunter image found: $kali_nethunter"
-        wget --progress=dot "$kali_nethunter_url$kali_nethunter" -O "/tmp/image.xz"
+        wget --progress=dot "$kali_nethunter" -O "/tmp/image.xz"
         echo "Download complete: $kali_nethunter"
         img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
@@ -108,7 +111,14 @@ img_burn() {
     # Confirm the device where the image will be written
     echo "The disk that will be erased is: /dev/$device_name"
 
+    # Check if the device exists and is accessible
+    if [ ! -b "/dev/$device_name" ]; then
+        echo "Error: Device /dev/$device_name is not available."
+        exit 1
+    fi
+
     # Write the image to the device
+    echo "Writing image to /dev/$device_name..."
     cat "/tmp/image.xz" | unxz -c > /tmp/image.img
     sudo dd if=/tmp/image.img of=/dev/$device_name bs=4M status=progress conv=noerror,sync
     echo "Writing process complete."
@@ -131,7 +141,7 @@ select menu in "Download and install Debian testing with Plasma mobile" \
         "Download and install Arch Linux with Phosh")
             arch_img_testing_posh
             ;;
-         "Download and install Kali Nethunter Linux with Phosh")
+        "Download and install Kali Nethunter Linux with Phosh")
             kali_nethunter_posh_img
             ;;
         "Exit")
