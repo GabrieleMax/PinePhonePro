@@ -42,7 +42,7 @@ echo "The connected device is: /dev/$device_name"
 deb_testing_posh=$(wget -q -O - "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 deb_testing_plasma=$(wget -q -O - "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.xz' | sort -r | head -n 1)
 arch_testing_posh=$(wget -q -O - "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
-kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}-pinephonepro.img.xz' | sort -r | head -n 1)
+kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
 
 # Function to download Debian testing image with Phosh for PinePhone Pro
 deb_img_testing_posh() {
