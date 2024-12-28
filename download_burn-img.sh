@@ -16,6 +16,27 @@ kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethu
 # Display the initial message
 echo -e "\n\nConnect the PinePhone Pro (press the volume up button until the LED turns blue):"
 
+# Verifica se il file disclaimer.txt esiste
+if [ ! -f disclaimer.txt ]; then
+    echo "Error: disclaimer.txt not found!"
+    exit 1
+fi
+
+# Load  disclaimer
+cat disclaimer.txt
+
+# Prompt per l'utente
+echo "Press 'y' to continue or any other key to exit."
+
+# Lettura dell'input dell'utente
+read -p "Continue? (y/n): " user_input
+
+# Controlla se l'utente ha premuto 'y' o 'Y'
+if [[ "$user_input" != "y" && "$user_input" != "Y" ]]; then
+    echo "Exiting the script."
+    exit 1
+fi
+
 # Save the initial list of devices (excluding partitions)
 initial_devices=$(lsblk -dn -o NAME | sort)
 

@@ -1,0 +1,3 @@
+This repository is provided as-is and for informational purposes only. While every effort has been made to ensure the accuracy and functionality of the code, no guarantees are made regarding its suitability for any particular purpose. The author(s) of this repository are not responsible for any damages, losses, or issues arising from the use of this code. Use at your own risk.
+
+By using this repository, you agree to take full responsibility for any consequences that may arise from its usage.
