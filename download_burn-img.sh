@@ -123,7 +123,7 @@ img_burn() {
     # Write the image to the device
     echo "Writing image to /dev/$device_name..."
     cat "/tmp/image.xz" | unxz -c > /tmp/image.img
-    sudo dd if=/tmp/image.img of=/dev/$device_name bs=4M status=progress conv=noerror,sync
+    sudo dd if=/tmp/image.img of=/dev/$device_name bs=4M status=progress conv=fsync,notrunc iflag=direct oflag=direct
     echo "Writing process complete."
 }
 
