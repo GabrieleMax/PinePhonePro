@@ -1,6 +1,9 @@
 #!/bin/bash
-## Last update 26/12/2024 ##                                   
+## Last update 28/12/2024 ##                                   
 ## Before you start the script, connect the device via USB to your PC/laptop.
+
+# Display the ASCII splashscreen
+cat splash_screen.txt  
 
 # Find the user with UID 1000 (first non-root user)
 FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')                                                                
@@ -11,7 +14,7 @@ arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
 
 # Display the initial message
-echo "Connect the PinePhone Pro (press vol+ until the LED turns blue):"
+echo "Connect the PinePhone Pro (press the volume up button until the LED turns blue):"
 
 # Save the initial list of devices (excluding partitions)
 initial_devices=$(lsblk -dn -o NAME | sort)
@@ -50,7 +53,7 @@ kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 
 deb_img_testing_posh() {
     if [ -n "$deb_testing_posh" ]; then
         echo "Found file: $deb_testing_posh"
-        wget --progress=dot "$deb_testing_url$deb_testing_posh" -O "/tmp/image.xz"
+        wget --progress=dot -c "$deb_testing_url$deb_testing_posh" -O "/tmp/image.xz"
         echo "Download complete: $deb_testing_posh"
         img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
@@ -63,7 +66,7 @@ deb_img_testing_posh() {
 deb_img_testing_plasma() {
     if [ -n "$deb_testing_plasma" ]; then
         echo "Latest file found: $deb_testing_plasma"
-        wget --progress=dot "$deb_testing_url$deb_testing_plasma" -O "/tmp/image.xz"
+        wget --progress=dot -c "$deb_testing_url$deb_testing_plasma" -O "/tmp/image.xz"
         echo "Download complete: $deb_testing_plasma"
         img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
@@ -76,7 +79,7 @@ deb_img_testing_plasma() {
 arch_img_testing_posh() {
     if [ -n "$arch_testing_posh" ]; then
         echo "Latest Arch Linux file found: $arch_testing_posh"
-        wget --progress=dot "$arch_url$arch_testing_posh" -O "/tmp/image.xz"
+        wget --progress=dot -c "$arch_url$arch_testing_posh" -O "/tmp/image.xz"
         echo "Download complete: $arch_testing_posh"
         img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
@@ -91,7 +94,7 @@ kali_nethunter_posh_img() {
     kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
     if [ -n "$kali_nethunter" ]; then
         echo "Latest Kali Nethunter image found: $kali_nethunter"
-        wget --progress=dot "$kali_nethunter" -O "/tmp/image.xz"
+        wget --progress=dot -c -d --timeout=60 --tries=3 "$kali_nethunter" -O "/tmp/image.xz"
         echo "Download complete: $kali_nethunter"
         img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
