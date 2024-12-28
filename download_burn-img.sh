@@ -3,6 +3,7 @@
 ## Before you start the script, connect the device via USB to your PC/laptop.
 
 # Display the ASCII splashscreen
+echo -e "\n\n"
 cat splash_screen.txt  
 
 # Find the user with UID 1000 (first non-root user)
@@ -13,9 +14,6 @@ deb_testing_url="https://images.mobian-project.org/pinephonepro/installer/weekly
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
 
-# Display the initial message
-echo -e "\n\nConnect the PinePhone Pro (press the volume up button until the LED turns blue):"
-
 # Verifica se il file disclaimer.txt esiste
 if [ ! -f disclaimer.txt ]; then
     echo "Error: disclaimer.txt not found!"
@@ -23,6 +21,7 @@ if [ ! -f disclaimer.txt ]; then
 fi
 
 # Load  disclaimer
+echo -e "\n\n"
 cat disclaimer.txt
 
 # Prompt per l'utente
@@ -36,6 +35,9 @@ if [[ "$user_input" != "y" && "$user_input" != "Y" ]]; then
     echo "Exiting the script."
     exit 1
 fi
+
+# Display the initial message
+echo -e "\n\nConnect the PinePhone Pro (press the volume up button until the LED turns blue):"
 
 # Save the initial list of devices (excluding partitions)
 initial_devices=$(lsblk -dn -o NAME | sort)
