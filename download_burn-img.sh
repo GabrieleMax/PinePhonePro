@@ -14,7 +14,7 @@ arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
 
 # Display the initial message
-echo "Connect the PinePhone Pro (press the volume up button until the LED turns blue):"
+echo -e "\n\nConnect the PinePhone Pro (press the volume up button until the LED turns blue):"
 
 # Save the initial list of devices (excluding partitions)
 initial_devices=$(lsblk -dn -o NAME | sort)
