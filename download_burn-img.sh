@@ -53,7 +53,7 @@ kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 
 deb_img_testing_posh() {
     if [ -n "$deb_testing_posh" ]; then
         echo "Found file: $deb_testing_posh"
-        wget --progress=dot -c "$deb_testing_url$deb_testing_posh" -O "/tmp/image.xz"
+        wget --progress=dot -c -d --timeout=60 --tries=3 "$deb_testing_url$deb_testing_posh" -O "/tmp/image.xz"
         echo "Download complete: $deb_testing_posh"
         img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
@@ -66,7 +66,7 @@ deb_img_testing_posh() {
 deb_img_testing_plasma() {
     if [ -n "$deb_testing_plasma" ]; then
         echo "Latest file found: $deb_testing_plasma"
-        wget --progress=dot -c "$deb_testing_url$deb_testing_plasma" -O "/tmp/image.xz"
+        wget --progress=dot -c -d --timeout=60 --tries=3 "$deb_testing_url$deb_testing_plasma" -O "/tmp/image.xz"
         echo "Download complete: $deb_testing_plasma"
         img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
@@ -79,7 +79,7 @@ deb_img_testing_plasma() {
 arch_img_testing_posh() {
     if [ -n "$arch_testing_posh" ]; then
         echo "Latest Arch Linux file found: $arch_testing_posh"
-        wget --progress=dot -c "$arch_url$arch_testing_posh" -O "/tmp/image.xz"
+        wget --progress=dot -c -d --timeout=60 --tries=3 "$arch_url$arch_testing_posh" -O "/tmp/image.xz"
         echo "Download complete: $arch_testing_posh"
         img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
