@@ -151,6 +151,9 @@ install_posh: apt software_common software_posh social time locale disablesuspen
 	apt-get dist-upgrade -y
 	reboot
 
+install_kali-nethunterpro:
+	make -C configure kali-nethunterpro
+
 secure:
 	systemctl stop ssh.service
 	systemctl disable ssh.service
