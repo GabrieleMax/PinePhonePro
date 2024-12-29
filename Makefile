@@ -12,7 +12,7 @@ UUID=$(shell blkid -s UUID -o value /dev/mmcblk1p1)
 #MOBIANIMG=$(shell find /tmp/ -iname "*mobian-installer*.xz" | grep -v "/\.local/")
 
 img:
-	bash download_burn-img.sh
+	install.sh
 
 sudodisable:
 	sudo passwd root
