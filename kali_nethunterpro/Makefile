@@ -65,8 +65,8 @@ disablesuspend:
 vim:
 	aptitude install vim -y
 	mkdir -p /home/$(FIRSTUSER)/.vim
-	cp vim/.vimrc /home/$(FIRSTUSER)/
-	cp -r vim/* /home/$(FIRSTUSER)/.vim/
+	cp ../vim/.vimrc /home/$(FIRSTUSER)/
+	cp -r ../vim/* /home/$(FIRSTUSER)/.vim/
 
 configure:
 	sudo sed -i '1s/^/#/' /etc/apt/sources.list

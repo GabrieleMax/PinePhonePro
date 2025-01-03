@@ -72,8 +72,8 @@ disablesuspend:
 vim:
 	aptitude install vim -y
 	mkdir -p /home/$(FIRSTUSER)/.vim
-	cp vim/.vimrc /home/$(FIRSTUSER)/
-	cp -r vim/* /home/$(FIRSTUSER)/.vim/
+	cp ../vim/.vimrc /home/$(FIRSTUSER)/
+	cp -r ../vim/* /home/$(FIRSTUSER)/.vim/
 
 # Inside Waydroid download F-Droid (search it by the web browser) and after it search and install Aurora app
 waydroid:
