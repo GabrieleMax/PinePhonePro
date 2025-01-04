@@ -10,7 +10,7 @@ UUID=$(shell blkid -s UUID -o value /dev/mmcblk1p1)
 #MOBIANIMG=$(shell find /tmp/ -iname "*mobian-installer*.xz" | grep -v "/\.local/")
 
 install_img:
-	bash install_img.sh
+	bash ./script/install_img.sh
 
 install_distribution:
 	bash distribution_selection.sh 
