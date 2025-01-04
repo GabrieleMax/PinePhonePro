@@ -15,9 +15,9 @@ install_img:
 install_distribution:
 	bash distribution_selection.sh 
 
-#install_kali_official:
+#config_distribution:
 
-## Second step, deploy to the phone
+## Deploy to the phone
 deploy:
 	@bash -c ' \
 	read -p "Insert the PinePhone ip address: " remoteip; \
