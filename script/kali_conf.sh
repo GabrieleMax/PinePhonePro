@@ -1,4 +1,5 @@
 #!/bin/bash
+# Run as sudo or root
 
 # Variables
 FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')

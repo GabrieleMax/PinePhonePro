@@ -1,5 +1,5 @@
 #!/bin/bash
-## Last update 28/12/2024 ##                                   
+## Run as sudo or root                                    
 ## Before you start the script, connect the device via USB to your PC/laptop.
 
 # Display the ASCII splashscreen

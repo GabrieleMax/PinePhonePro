@@ -1,4 +1,5 @@
 #!/bin/bash
+# Run as sudo or root
 
 # Funzione per eseguire make per Mobian Testing con Posh
 mobian_t_posh() {
