@@ -108,7 +108,7 @@ sdcardmount() {
 }
 
 # Function to install SD card
-installsd() {
+install_sd() {
     sdcardformat
     sdcardmount
 }
@@ -153,10 +153,11 @@ secure_system() {
 # Function to display the menu
 show_menu() {
     echo "Choose one of the following options:"
-    echo "1) install_posh"
-    echo "2) install_waydroid"
-    echo "3) Secure"
-    echo "4) Exit"
+    echo "1) Kali Nethunter posh tuning"
+    echo "2) Install Waydroid"
+    echo "3) System secure (exectute it as last choice)"
+    echo "4) Install SD Card"
+    echo "5) Exit"
 }
 
 # Function to handle user choice
@@ -166,7 +167,8 @@ get_user_choice() {
         1) install_posh ;;
         2) waydroid_install ;;
         3) secure_system ;;
-        4) echo "Exiting..."; exit 0 ;;
+        4) install_sd ;;
+        5) echo "Exiting..."; exit 0 ;;
         *) echo "Invalid option. Please try again."; get_user_choice ;;
     esac
 }
