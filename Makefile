@@ -13,7 +13,7 @@ install_img:
 	bash ./script/install_img.sh
 
 install_distribution:
-	bash distribution_selection.sh 
+	bash ./distribution_conf.sh 
 
 #config_distribution:
 
