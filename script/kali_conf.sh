@@ -56,12 +56,13 @@ install_vim() {
 
 # Function to install Waydroid
 waydroid_install() {
-    curl -s https://repo.waydro.id/ | bash
-    aptitude install waydroid -y
-    waydroid init
-    systemctl enable waydroid-container
-    systemctl restart waydroid-container
-}
+    sudo apt install curl ca-certificates -y
+    curl -sSL https://repo.waydro.id -o wd.sh
+    sudo bash wd.sh bookworm
+    sudo apt install waydroid
+    sudo waydroid init
+    reboot
+   }
 
 # Function to install Charles Proxy
 install_proxy_charles() {
