@@ -42,18 +42,18 @@ select option in \
     case $option in
         "Mobian Testing with Posh tuning")
             echo "Executing Mobian Testing with Posh tuning on remote machine..."
-            run_remote_command "bash -s" < mobian_testing.sh install_posh
+            run_remote_command "bash -s" < ~/install/script/mobian_testing.sh install_posh
             break
             ;;
         "Mobian Testing with Plasma tuning")
             echo "Executing Mobian Testing with Plasma tuning on remote machine..."
-            run_remote_command "bash -s" < mobian_testing.sh install_plasma
+            run_remote_command "bash -s" <  ~/install/script/mobian_testing.sh install_plasma
             break
             ;;
         "Kali Official tuning")
             echo "Executing Kali Official tuning on remote machine..."
-            run_remote_command "bash -s" < kali_first.sh
-            run_remote_command "bash -s" < kali_conf.sh
+            run_remote_command "bash -s" < ~/install/script/kali_first.sh
+            run_remote_command "bash -s" < ~/install/script/kali_conf.sh
             break
             ;;
         "Exit")
