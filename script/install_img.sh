@@ -1,6 +1,5 @@
 #!/bin/bash
 ## Run as sudo or root                                    
-## Before you start the script, connect the device via USB to your PC/laptop.
 
 # Display the ASCII splashscreen
 echo -e "\n\n"
@@ -65,9 +64,9 @@ done
 echo "The connected device is: /dev/$device_name"
 
 # Retrieve the list of downloadable files from the websites, sort them, and take the latest one
-deb_testing_posh=$(wget -q -O - "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
-deb_testing_plasma=$(wget -q -O - "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.xz' | sort -r | head -n 1)
-arch_testing_posh=$(wget -q -O - "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
+deb_testing_posh=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
+deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.xz' | sort -r | head -n 1)
+arch_testing_posh=$(curl -s "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 #kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}\.\d{2}-pinephonepro\.img\.xz' | sort -r | head -n 1)
 #kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
 kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
@@ -85,16 +84,60 @@ deb_img_testing_posh() {
     fi
 }
 
-# Function to download Debian testing image with Plasma for PinePhone Pro
+# Function to download Mobian testing image with Plasma for PinePhone Pro
 deb_img_testing_plasma() {
-    if [ -n "$deb_testing_plasma" ]; then
-        echo "Latest file found: $deb_testing_plasma"
-        wget --progress=dot -c -d --timeout=60 --tries=3 "$deb_testing_url$deb_testing_plasma" -O "/tmp/image.xz"
-        echo "Download complete: $deb_testing_plasma"
-        img_burn  # Automatically call the burn function after downloading
-        exit  # Exit after burn
-    else
+    if [ -z "$deb_testing_plasma" ]; then
         echo "File not found."
+        return 1  # Termina solo la funzione, lo script continua
+    fi  
+
+    if [ -f "/tmp/$deb_testing_plasma" ]; then
+        echo "File already exists in /tmp/. Skipping download."
+    else
+        echo "Latest file found: $deb_testing_plasma"
+        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/tmp/$deb_testing_plasma" "$deb_testing_url$deb_testing_plasma"
+
+        if [ $? -eq 0 ]; then
+            echo "Download complete: $deb_testing_plasma"
+        else
+            echo "Download failed."
+            return 1
+        fi
+    fi
+}
+
+# Function to check Mobian testing image with Plasma for PinePhone Pro signature
+deb_img_testing_plasma_sig() {
+    deb_testing_plasma_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums' | sort -r | head -n 1)
+    deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
+    deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
+
+    wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasums"
+    wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasig"
+    wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_imgbmap"
+
+    # SHA256SUM check
+    if sha256sum -c "/tmp/$deb_testing_plasma_shasums" 2>&1 | grep -q "OK$"; then
+        echo "SHA256SUM verification passed. Renaming file..."
+
+        # Verifica se il file esiste prima di spostarlo
+        if [ -f "/tmp/$deb_testing_plasma" ]; then
+            mv "/tmp/$deb_testing_plasma" "/tmp/image.xz"
+            
+            # Controlla se mv ha avuto successo
+            if [ $? -eq 0 ]; then
+                echo "File renamed to image.xz"
+            else
+                echo "Error: Failed to rename the file."
+                exit 1
+            fi
+        else
+            echo "File to rename not found in /tmp."
+            exit 1
+        fi
+    else
+        echo "Signature failed: SHA256SUM verification did not pass."
+        exit 1
     fi
 }
 
@@ -159,7 +202,9 @@ select menu in "Download and install Debian testing with Plasma mobile" \
                "Exit"; do
     case $menu in
         "Download and install Debian testing with Plasma mobile")
-            deb_img_testing_plasma
+            deb_img_testing_plasma 
+            deb_img_testing_plasma_sig
+            img_burn 
             ;;
         "Download and install Debian testing with Phosh mobile")
             deb_img_testing_posh
