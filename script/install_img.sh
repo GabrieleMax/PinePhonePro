@@ -191,6 +191,9 @@ img_burn() {
     cat "/tmp/image.xz" | unxz -c > /tmp/image.img
     sudo dd if=/tmp/image.img of=/dev/$device_name bs=4M status=progress conv=fsync,notrunc iflag=direct oflag=direct
     echo "Writing process complete."
+
+    # Ensure script exits after burning process
+    exit 0
 }
 
 # Menu with the correct options
