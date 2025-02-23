@@ -73,14 +73,58 @@ kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 
 
 # Function to download Debian testing image with Phosh for PinePhone Pro
 deb_img_testing_posh() {
-    if [ -n "$deb_testing_posh" ]; then
-        echo "Found file: $deb_testing_posh"
-        wget --progress=dot -c -d --timeout=60 --tries=3 "$deb_testing_url$deb_testing_posh" -O "/tmp/image.xz"
-        echo "Download complete: $deb_testing_posh"
-        img_burn  # Automatically call the burn function after downloading
-        exit  # Exit after burn
-    else
+    if [ -z "$deb_testing_posh" ]; then
         echo "File not found."
+        return 1  # Termina solo la funzione, lo script continua
+    fi  
+
+    if [ -f "/tmp/$deb_testing_posh" ]; then
+        echo "File already exists in /tmp/. Skipping download."
+    else
+        echo "Latest file found: $deb_testing_posh"
+        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/tmp/$deb_testing_posh" "$deb_testing_url$deb_testing_posh"
+
+        if [ $? -eq 0 ]; then
+            echo "Download complete: $deb_testing_posh"
+        else
+            echo "Download failed."
+            return 1
+        fi
+    fi
+}
+
+# Function to check Mobian testing image with Posh for PinePhone Pro signature
+deb_img_testing_posh_sig() {
+    deb_testing_posh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-posh-\d{8}.sha256sums' | sort -r | head -n 1)
+    deb_testing_posh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-posh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
+    deb_testing_posh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-posh-\d{8}.img.bmap' | sort -r | head -n 1)
+
+    wget -q -P /tmp "$deb_testing_url$deb_testing_posh_shasums"
+    wget -q -P /tmp "$deb_testing_url$deb_testing_posh_shasig"
+    wget -q -P /tmp "$deb_testing_url$deb_testing_posh_imgbmap"
+
+    # SHA256SUM check
+    if sha256sum -c "/tmp/$deb_testing_posh_shasums" 2>&1 | grep -q "OK$"; then
+        echo "SHA256SUM verification passed. Renaming file..."
+
+        # Verifica se il file esiste prima di spostarlo
+        if [ -f "/tmp/$deb_testing_posh" ]; then
+            mv "/tmp/$deb_testing_posh" "/tmp/image.xz"
+            
+            # Controlla se mv ha avuto successo
+            if [ $? -eq 0 ]; then
+                echo "File renamed to image.xz"
+            else
+                echo "Error: Failed to rename the file."
+                exit 1
+            fi
+        else
+            echo "File to rename not found in /tmp."
+            exit 1
+        fi
+    else
+        echo "Signature failed: SHA256SUM verification did not pass."
+        exit 1
     fi
 }
 
@@ -211,6 +255,8 @@ select menu in "Download and install Debian testing with Plasma mobile" \
             ;;
         "Download and install Debian testing with Phosh mobile")
             deb_img_testing_posh
+            deb_img_testing_posh_sig
+            img_burn 
             ;;
         "Download and install Arch Linux with Phosh")
             arch_img_testing_posh
