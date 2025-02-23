@@ -3,14 +3,14 @@
 ## Second step - Power off the phone and connect it by usb to the laptop
 ## Third step - Press vol+ untill the status led will be blue;
 
-FIRSTUSER=$(shell grep "1000" /etc/passwd | awk -F ':' '{print $$1}')
-DEVICE=/dev/mmcblk1
-LAYOUT=it
-UUID=$(shell blkid -s UUID -o value /dev/mmcblk1p1)
+#FIRSTUSER=$(shell grep "1000" /etc/passwd | awk -F ':' '{print $$1}')
+#DEVICE=/dev/mmcblk1
+#LAYOUT=it
+#UUID=$(shell blkid -s UUID -o value /dev/mmcblk1p1)
 #MOBIANIMG=$(shell find /tmp/ -iname "*mobian-installer*.xz" | grep -v "/\.local/")
 
-install_img:
-	bash ./script/install_img.sh
+install:
+	bash ./script/install.sh
 
 install_distribution:
 	bash ./script/distribution_conf.sh 
