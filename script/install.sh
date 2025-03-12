@@ -161,7 +161,7 @@ deb_img_testing_plasma_sig() {
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_imgbmap"
 
     # SHA256SUM check
-    if sha256sum -c "/tmp/$deb_testing_plasma_shasums" 2>&1 | grep -q "OK$"; then
+    if sha256sum -c "/tmp/$deb_testing_plasma_shasums" 2>&1 | tee /tmp/shasum_output.log grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
         # Verifica se il file esiste prima di spostarlo
