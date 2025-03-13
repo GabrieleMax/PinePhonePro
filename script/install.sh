@@ -156,7 +156,7 @@ deb_img_testing_plasma_sig() {
     deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
     deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
     
-    if [ -f /tmp/$deb_testing_url$deb_testing_plasma_shasums ] && [ -f /tmp/$deb_testing_url$deb_testing_plasma_shasig ] && [ -f /tmp/$deb_testing_url$deb_testing_plasma_imgbmap]; then
+    if [ -f /tmp/$deb_testing_plasma_shasums ] && [ -f /tmp/$deb_testing_plasma_shasig ] && [ -f /tmp/$deb_testing_plasma_imgbmap ]; then
       echo "Signature files already available and I don't download them."
     else
       echo "I'm going to download signature files."
@@ -167,8 +167,11 @@ deb_img_testing_plasma_sig() {
   
     # SHA256SUM check
     #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
-
-    if ( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" ) |  grep -q "OK"; then
+if [ ! -f "/tmp/$deb_testing_plasma" ]; then
+  echo "Image not avalaible"
+  exit 1
+else
+    if ( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" ) |  grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
         # Verifica se il file esiste prima di spostarlo
@@ -190,7 +193,9 @@ deb_img_testing_plasma_sig() {
         echo "Signature failed: SHA256SUM verification did not pass."
         exit 1
     fi
+fi
 }
+
 
 # Function to download the latest Arch Linux image for PinePhone Pro
 arch_img_testing_posh() {
