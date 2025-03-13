@@ -9,7 +9,7 @@ cat splash_screen.txt
 FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')                                                                
 
 # URLs for different operating systems
-deb_testing_url="https://images.mobian-project.org/pinephonepro/installer/weekly/"
+deb_testing_url="https://images.mobian.org/pinephonepro/weekly/"
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
 
@@ -65,7 +65,7 @@ echo "The connected device is: /dev/$device_name"
 
 # Retrieve the list of downloadable files from the websites, sort them, and take the latest one
 deb_testing_posh=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
-deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.xz' | sort -r | head -n 1)
+deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-plasma-mobile-\d{8}\.img\.xz' | sort -r | head -n 1)
 arch_testing_posh=$(curl -s "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 #kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}\.\d{2}-pinephonepro\.img\.xz' | sort -r | head -n 1)
 #kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
