@@ -36,7 +36,7 @@ if [[ "$user_input" != "y" && "$user_input" != "Y" ]]; then
 fi
 
 # Display the initial message
-echo -e "\n\nConnect the PinePhone Pro (press the volume up button until the LED turns blue):"
+echo -e "\n\nConnect the PinePhone Pro and after it press the volume up button until the LED turns blue:"
 
 # Save the initial list of devices (excluding partitions)
 initial_devices=$(lsblk -dn -o NAME | sort)
@@ -156,33 +156,41 @@ deb_img_testing_plasma_sig() {
     deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
     deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
 
+    if [ -f /tmp/$deb_testing_url$deb_testing_plasma_shasums ] && [ -f /tmp/$deb_testing_url$deb_testing_plasma_shasig ] && [ -f /tmp/$deb_testing_url$deb_testing_plasma_imgbmap]; then
+      echo "Signature files already available and I don't download them"
+    else
+      echo "I'm going to download signature files."
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasums"
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasig"
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_imgbmap"
-
-    # SHA256SUM check
-    if sha256sum -c "/tmp/$deb_testing_plasma_shasums" 2>&1 | tee /tmp/shasum_output.log grep -q "OK$"; then
-        echo "SHA256SUM verification passed. Renaming file..."
-
-        # Verifica se il file esiste prima di spostarlo
-        if [ -f "/tmp/$deb_testing_plasma" ]; then
-            mv "/tmp/$deb_testing_plasma" "/tmp/image.xz"
-            
-            # Controlla se mv ha avuto successo
-            if [ $? -eq 0 ]; then
-                echo "File renamed to image.xz"
-            else
-                echo "Error: Failed to rename the file."
-                exit 1
-            fi
-        else
-            echo "File to rename not found in /tmp."
-            exit 1
-        fi
-    else
-        echo "Signature failed: SHA256SUM verification did not pass."
-        exit 1
     fi
+    
+    echo "/tmp/$deb_testing_plasma_shasums"
+    cd /tmp
+    sha256sum -c $deb_testing_plasma_shasums
+    ## SHA256SUM check
+    #if sha256sum -c "/tmp/$deb_testing_plasma_shasums" 2>&1 | tee /tmp/shasum_output.log grep "OK"; then
+        #echo "SHA256SUM verification passed. Renaming file..."
+
+        ## Verifica se il file esiste prima di spostarlo
+        #if [ -f "/tmp/$deb_testing_plasma" ]; then
+            #mv "/tmp/$deb_testing_plasma" "/tmp/image.xz"
+            
+            ## Controlla se mv ha avuto successo
+            #if [ $? -eq 0 ]; then
+                #echo "File renamed to image.xz"
+            #else
+                #echo "Error: Failed to rename the file."
+                #exit 1
+            #fi
+        #else
+            #echo "File to rename not found in /tmp."
+            #exit 1
+        #fi
+    #else
+        #echo "Signature failed: SHA256SUM verification did not pass."
+        #exit 1
+    #fi
 }
 
 # Function to download the latest Arch Linux image for PinePhone Pro
@@ -241,9 +249,10 @@ img_burn() {
 }
 
 # Menu with the correct options
-PS3="Choose an option (1-5): "
+PS3="Choose an option (1-6): "
 select menu in "Download and install Debian testing with Plasma mobile" \
                "Download and install Debian testing with Phosh mobile" \
+               "Test plasma signature" \
                "Download and install Arch Linux with Phosh" \
                "Download and install Kali Nethunter Linux with Phosh" \
                "Exit"; do
@@ -257,6 +266,9 @@ select menu in "Download and install Debian testing with Plasma mobile" \
             deb_img_testing_posh
             deb_img_testing_posh_sig
             img_burn 
+            ;;
+        "Test plasma signature")
+            deb_img_testing_plasma_sig  
             ;;
         "Download and install Arch Linux with Phosh")
             arch_img_testing_posh
