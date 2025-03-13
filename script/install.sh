@@ -95,9 +95,9 @@ deb_img_testing_posh() {
 
 # Function to check Mobian testing image with Posh for PinePhone Pro signature
 deb_img_testing_posh_sig() {
-    deb_testing_posh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-posh-\d{8}.sha256sums' | sort -r | head -n 1)
-    deb_testing_posh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-posh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
-    deb_testing_posh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-posh-\d{8}.img.bmap' | sort -r | head -n 1)
+    deb_testing_posh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-posh-\d{8}.sha256sums' | sort -r | head -n 1)
+    deb_testing_posh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-posh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
+    deb_testing_posh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-posh-\d{8}.img.bmap' | sort -r | head -n 1)
 
     wget -q -P /tmp "$deb_testing_url$deb_testing_posh_shasums"
     wget -q -P /tmp "$deb_testing_url$deb_testing_posh_shasig"
@@ -152,10 +152,10 @@ deb_img_testing_plasma() {
 
 # Function to check Mobian testing image with Plasma for PinePhone Pro signature
 deb_img_testing_plasma_sig() {
-    deb_testing_plasma_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums' | sort -r | head -n 1)
-    deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
-    deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
-
+    deb_testing_plasma_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.sha256sums' | sort -r | head -n 1)
+    deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
+    deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
+    
     if [ -f /tmp/$deb_testing_url$deb_testing_plasma_shasums ] && [ -f /tmp/$deb_testing_url$deb_testing_plasma_shasig ] && [ -f /tmp/$deb_testing_url$deb_testing_plasma_imgbmap]; then
       echo "Signature files already available and I don't download them."
     else
@@ -164,31 +164,32 @@ deb_img_testing_plasma_sig() {
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasig"
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_imgbmap"
     fi
-    
-    sha256sum -c /tmp/$deb_testing_plasma_shasums
-    ## SHA256SUM check
-    #if sha256sum -c "/tmp/$deb_testing_plasma_shasums" 2>&1 | tee /tmp/shasum_output.log grep "OK"; then
-        #echo "SHA256SUM verification passed. Renaming file..."
+  
+    # SHA256SUM check
+    #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
 
-        ## Verifica se il file esiste prima di spostarlo
-        #if [ -f "/tmp/$deb_testing_plasma" ]; then
-            #mv "/tmp/$deb_testing_plasma" "/tmp/image.xz"
+    if ( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" ) |  grep -q "OK"; then
+        echo "SHA256SUM verification passed. Renaming file..."
+
+        # Verifica se il file esiste prima di spostarlo
+        if [ -f "/tmp/$deb_testing_plasma" ]; then
+            mv "/tmp/$deb_testing_plasma" "/tmp/image.xz"
             
-            ## Controlla se mv ha avuto successo
-            #if [ $? -eq 0 ]; then
-                #echo "File renamed to image.xz"
-            #else
-                #echo "Error: Failed to rename the file."
-                #exit 1
-            #fi
-        #else
-            #echo "File to rename not found in /tmp."
-            #exit 1
-        #fi
-    #else
-        #echo "Signature failed: SHA256SUM verification did not pass."
-        #exit 1
-    #fi
+            # Controlla se mv ha avuto successo
+            if [ $? -eq 0 ]; then
+                echo "File renamed to image.xz"
+            else
+                echo "Error: Failed to rename the file."
+                exit 1
+            fi
+        else
+            echo "File to rename not found in /tmp."
+            exit 1
+        fi
+    else
+        echo "Signature failed: SHA256SUM verification did not pass."
+        exit 1
+    fi
 }
 
 # Function to download the latest Arch Linux image for PinePhone Pro
