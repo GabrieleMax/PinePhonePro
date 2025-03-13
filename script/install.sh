@@ -157,7 +157,7 @@ deb_img_testing_plasma_sig() {
     deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
 
     if [ -f /tmp/$deb_testing_url$deb_testing_plasma_shasums ] && [ -f /tmp/$deb_testing_url$deb_testing_plasma_shasig ] && [ -f /tmp/$deb_testing_url$deb_testing_plasma_imgbmap]; then
-      echo "Signature files already available and I don't download them"
+      echo "Signature files already available and I don't download them."
     else
       echo "I'm going to download signature files."
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasums"
@@ -165,9 +165,7 @@ deb_img_testing_plasma_sig() {
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_imgbmap"
     fi
     
-    echo "/tmp/$deb_testing_plasma_shasums"
-    cd /tmp
-    sha256sum -c $deb_testing_plasma_shasums
+    sha256sum -c /tmp/$deb_testing_plasma_shasums
     ## SHA256SUM check
     #if sha256sum -c "/tmp/$deb_testing_plasma_shasums" 2>&1 | tee /tmp/shasum_output.log grep "OK"; then
         #echo "SHA256SUM verification passed. Renaming file..."
