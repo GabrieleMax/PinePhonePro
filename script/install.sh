@@ -65,28 +65,28 @@ done
 echo "The connected device is: /dev/$device_name"
 
 # Retrieve the list of downloadable files from the websites, sort them, and take the latest one
-deb_testing_posh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
+deb_testing_phosh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-plasma-mobile-\d{8}\.img\.xz' | sort -r | head -n 1)
-arch_testing_posh=$(curl -s "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
+arch_testing_phosh=$(curl -s "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 #kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}\.\d{2}-pinephonepro\.img\.xz' | sort -r | head -n 1)
 #kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
 kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
 
 # Function to download Debian testing image with Phosh for PinePhone Pro
-deb_img_testing_posh() {
-    if [ -z "$deb_testing_posh" ]; then
+deb_img_testing_phosh() {
+    if [ -z "$deb_testing_phosh" ]; then
         echo "File not found."
         return 1  # Termina solo la funzione, lo script continua
     fi  
 
-    if [ -f "/tmp/$deb_testing_posh" ]; then
+    if [ -f "/tmp/$deb_testing_phosh" ]; then
         echo "File already exists in /tmp/. Skipping download."
     else
-        echo "Latest file found: $deb_testing_posh"
-        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/tmp/$deb_testing_posh" "$deb_testing_url$deb_testing_posh"
+        echo "Latest file found: $deb_testing_phosh"
+        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/tmp/$deb_testing_phosh" "$deb_testing_url$deb_testing_phosh"
 
         if [ $? -eq 0 ]; then
-            echo "Download complete: $deb_testing_posh"
+            echo "Download complete: $deb_testing_phosh"
         else
             echo "Download failed."
             return 1
@@ -94,33 +94,33 @@ deb_img_testing_posh() {
     fi
 }
 
-# Function to check Mobian testing image with Posh for PinePhone Pro signature
-deb_img_testing_posh_sig() {
-    deb_testing_posh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-posh-\d{8}.sha256sums' | sort -r | head -n 1)
-    deb_testing_posh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-posh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
-    deb_testing_posh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-posh-\d{8}.img.bmap' | sort -r | head -n 1)
+# Function to check Mobian testing image with phosh for PinePhone Pro signature
+deb_img_testing_phosh_sig() {
+    deb_testing_phosh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.sha256sums' | sort -r | head -n 1)
+    deb_testing_phosh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
+    deb_testing_phosh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.img.bmap' | sort -r | head -n 1)
     
-    if [ -f /tmp/$deb_testing_posh_shasums ] && [ -f /tmp/$deb_testing_posh_shasig ] && [ -f /tmp/$deb_testing_posh_imgbmap ]; then
+    if [ -f /tmp/$deb_testing_phosh_shasums ] && [ -f /tmp/$deb_testing_phosh_shasig ] && [ -f /tmp/$deb_testing_phosh_imgbmap ]; then
       echo "Signature files already available and I don't download them."
     else
       echo "I'm going to download signature files."
-    wget -q -P /tmp "$deb_testing_url$deb_testing_posh_shasums"
-    wget -q -P /tmp "$deb_testing_url$deb_testing_posh_shasig"
-    wget -q -P /tmp "$deb_testing_url$deb_testing_posh_imgbmap"
+    wget -q -P /tmp "$deb_testing_url$deb_testing_phosh_shasums"
+    wget -q -P /tmp "$deb_testing_url$deb_testing_phosh_shasig"
+    wget -q -P /tmp "$deb_testing_url$deb_testing_phosh_imgbmap"
     fi
   
     # SHA256SUM check
     #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
-if [ ! -f "/tmp/$deb_testing_posh" ]; then
+if [ ! -f "/tmp/$deb_testing_phosh" ]; then
   echo "Image not avalaible"
   exit 1
 else
-    if ( cd /tmp && sha256sum -c "$deb_testing_posh_shasums" ) |  grep -q "OK$"; then
+    if ( cd /tmp && sha256sum -c "$deb_testing_phosh_shasums" ) |  grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
         # Verifica se il file esiste prima di spostarlo
-        if [ -f "/tmp/$deb_testing_posh" ]; then
-            mv "/tmp/$deb_testing_posh" "/tmp/image.xz"
+        if [ -f "/tmp/$deb_testing_phosh" ]; then
+            mv "/tmp/$deb_testing_phosh" "/tmp/image.xz"
             
             # Controlla se mv ha avuto successo
             if [ $? -eq 0 ]; then
@@ -211,11 +211,11 @@ fi
 
 
 # Function to download the latest Arch Linux image for PinePhone Pro
-arch_img_testing_posh() {
-    if [ -n "$arch_testing_posh" ]; then
-        echo "Latest Arch Linux file found: $arch_testing_posh"
-        wget --progress=dot -c -d --timeout=60 --tries=3 "$arch_url$arch_testing_posh" -O "/tmp/image.xz"
-        echo "Download complete: $arch_testing_posh"
+arch_img_testing_phosh() {
+    if [ -n "$arch_testing_phosh" ]; then
+        echo "Latest Arch Linux file found: $arch_testing_phosh"
+        wget --progress=dot -c -d --timeout=60 --tries=3 "$arch_url$arch_testing_phosh" -O "/tmp/image.xz"
+        echo "Download complete: $arch_testing_phosh"
         img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
     else
@@ -224,7 +224,7 @@ arch_img_testing_posh() {
 }
 
 # Function to download the latest Kali Nethunter image for PinePhone Pro
-kali_nethunter_posh_img() {
+kali_nethunter_phosh_img() {
     echo "Trying to download the Kali Nethunter image..."
     kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1)"
     if [ -n "$kali_nethunter" ]; then
@@ -279,15 +279,15 @@ select menu in "Download and install Debian testing with Plasma mobile" \
             img_burn 
             ;;
         "Download and install Debian testing with Phosh mobile")
-            deb_img_testing_posh
-            deb_img_testing_posh_sig
+            deb_img_testing_phosh
+            deb_img_testing_phosh_sig
             img_burn 
             ;;
        "Download and install Arch Linux with Phosh")
-            arch_img_testing_posh
+            arch_img_testing_phosh
             ;;
         "Download and install Kali Nethunter Linux with Phosh")
-            kali_nethunter_posh_img
+            kali_nethunter_phosh_img
             ;;
         "Exit")
             echo "Exiting the script."
