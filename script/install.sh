@@ -9,6 +9,7 @@ cat splash_screen.txt
 FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')                                                                
 
 # URLs for different operating systems
+deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/blob/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
 deb_testing_url="https://images.mobian.org/pinephonepro/weekly/"
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
@@ -64,7 +65,7 @@ done
 echo "The connected device is: /dev/$device_name"
 
 # Retrieve the list of downloadable files from the websites, sort them, and take the latest one
-deb_testing_posh=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
+deb_testing_posh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-plasma-mobile-\d{8}\.img\.xz' | sort -r | head -n 1)
 arch_testing_posh=$(curl -s "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 #kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}\.\d{2}-pinephonepro\.img\.xz' | sort -r | head -n 1)
@@ -139,11 +140,6 @@ else
 fi
 }
 
-
-
-
-
-
 # Function to download Mobian testing image with Plasma for PinePhone Pro
 deb_img_testing_plasma() {
     if [ -z "$deb_testing_plasma" ]; then
@@ -179,6 +175,7 @@ deb_img_testing_plasma_sig() {
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasums"
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasig"
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_imgbmap"
+    wget -q -P /tmp "$deb_keyring"
     fi
   
     # SHA256SUM check
@@ -252,7 +249,7 @@ img_burn() {
     # Confirm the device where the image will be written
     echo "The disk that will be erased is: /dev/$device_name"
 
-    # Check if the device exists and is accessible
+    # Check if the device exists and if it is accessible
     if [ ! -b "/dev/$device_name" ]; then
         echo "Error: Device /dev/$device_name is not available."
         exit 1
