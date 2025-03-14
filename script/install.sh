@@ -98,13 +98,23 @@ deb_img_testing_posh_sig() {
     deb_testing_posh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-posh-\d{8}.sha256sums' | sort -r | head -n 1)
     deb_testing_posh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-posh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
     deb_testing_posh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-posh-\d{8}.img.bmap' | sort -r | head -n 1)
-
+    
+    if [ -f /tmp/$deb_testing_posh_shasums ] && [ -f /tmp/$deb_testing_posh_shasig ] && [ -f /tmp/$deb_testing_posh_imgbmap ]; then
+      echo "Signature files already available and I don't download them."
+    else
+      echo "I'm going to download signature files."
     wget -q -P /tmp "$deb_testing_url$deb_testing_posh_shasums"
     wget -q -P /tmp "$deb_testing_url$deb_testing_posh_shasig"
     wget -q -P /tmp "$deb_testing_url$deb_testing_posh_imgbmap"
-
+    fi
+  
     # SHA256SUM check
-    if sha256sum -c "/tmp/$deb_testing_posh_shasums" 2>&1 | grep -q "OK$"; then
+    #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
+if [ ! -f "/tmp/$deb_testing_posh" ]; then
+  echo "Image not avalaible"
+  exit 1
+else
+    if ( cd /tmp && sha256sum -c "$deb_testing_posh_shasums" ) |  grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
         # Verifica se il file esiste prima di spostarlo
@@ -126,7 +136,13 @@ deb_img_testing_posh_sig() {
         echo "Signature failed: SHA256SUM verification did not pass."
         exit 1
     fi
+fi
 }
+
+
+
+
+
 
 # Function to download Mobian testing image with Plasma for PinePhone Pro
 deb_img_testing_plasma() {
@@ -253,10 +269,9 @@ img_burn() {
 }
 
 # Menu with the correct options
-PS3="Choose an option (1-6): "
+PS3="Choose an option (1-5): "
 select menu in "Download and install Debian testing with Plasma mobile" \
                "Download and install Debian testing with Phosh mobile" \
-               "Test plasma signature" \
                "Download and install Arch Linux with Phosh" \
                "Download and install Kali Nethunter Linux with Phosh" \
                "Exit"; do
@@ -271,10 +286,7 @@ select menu in "Download and install Debian testing with Plasma mobile" \
             deb_img_testing_posh_sig
             img_burn 
             ;;
-        "Test plasma signature")
-            deb_img_testing_plasma_sig  
-            ;;
-        "Download and install Arch Linux with Phosh")
+       "Download and install Arch Linux with Phosh")
             arch_img_testing_posh
             ;;
         "Download and install Kali Nethunter Linux with Phosh")
