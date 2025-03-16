@@ -177,11 +177,13 @@ deb_img_testing_plasma_sig() {
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_imgbmap"
     fi
 
-# GPG download, import and check
+# GPG download and import key
 export LANG=C
 wget -q -P /tmp "$deb_keyring"
+
+# GPG check key
 gpg --import mobian-archive-keyring.gpg
-if gpg --verify $deb_testing_plasma_shasig 2>&1 | grep -qi "Good signature"; then
+if gpg --verify "$deb_testing_plasma_shasig" >/dev/null 2>&1; then
     echo "Valid GPG signature"
 else
     echo "GPG signature not valid"
