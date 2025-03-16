@@ -111,21 +111,22 @@ deb_img_testing_phosh_sig() {
 
 # GPG download and import key
 export LANG=C
-if [ -z "$deb_keyring" ]; then
-  echo "Debian keyring variable url not avalaible"
-else
-  echo "I'm going to download Debian keyring"
-wget -q -P /tmp "$deb_keyring"
-fi
 
-# GPG check key
-gpg --import mobian-archive-keyring.gpg
-if gpg --verify "$deb_testing_plasma_shasig" >/dev/null 2>&1; then
-    echo "Valid GPG signature"
+if [ -z "$deb_keyring" ]; then
+    echo "Debian keyring variable URL not available"
 else
-    echo "GPG signature not valid"
-    exit 1
-fi 
+    echo "I'm going to download Debian keyring"
+    wget -q -P /tmp "$deb_keyring"
+    gpg --import mobian-archive-keyring.gpg
+
+    # GPG check key
+    if gpg --verify "$deb_testing_plasma_shasig" >/dev/null 2>&1; then
+        echo "Valid GPG signature"
+    else
+        echo "GPG signature not valid"
+        exit 1
+    fi
+fi
 
 # SHA256SUM check
 #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
@@ -197,21 +198,22 @@ deb_img_testing_plasma_sig() {
 
 # GPG download and import key
 export LANG=C
-if [ -z "$deb_keyring" ]; then
-  echo "Debian keyring variable url not avalaible"
-else
-  echo "I'm going to download Debian keyring"
-wget -q -P /tmp "$deb_keyring"
-fi
 
-# GPG check key
-gpg --import mobian-archive-keyring.gpg
-if gpg --verify "$deb_testing_plasma_shasig" >/dev/null 2>&1; then
-    echo "Valid GPG signature"
+if [ -z "$deb_keyring" ]; then
+    echo "Debian keyring variable URL not available"
 else
-    echo "GPG signature not valid"
-    exit 1
-fi 
+    echo "I'm going to download Debian keyring"
+    wget -q -P /tmp "$deb_keyring"
+    gpg --import mobian-archive-keyring.gpg
+
+    # GPG check key
+    if gpg --verify "$deb_testing_plasma_shasig" >/dev/null 2>&1; then
+        echo "Valid GPG signature"
+    else
+        echo "GPG signature not valid"
+        exit 1
+    fi
+fi
 
 # SHA256SUM check
 #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
