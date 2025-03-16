@@ -9,7 +9,7 @@ cat splash_screen.txt
 FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')                                                                
 
 # URLs for different operating systems
-deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/blob/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
+deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/raw/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
 deb_testing_url="https://images.mobian.org/pinephonepro/weekly/"
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
@@ -110,17 +110,19 @@ deb_img_testing_phosh_sig() {
     fi
 
 # GPG download and import key
-export LANG=C
-
 if [ -z "$deb_keyring" ]; then
     echo "Debian keyring variable URL not available"
-else
-    echo "I'm going to download Debian keyring"
-    wget -q -P /tmp "$deb_keyring"
-    gpg --import mobian-archive-keyring.gpg
-
+    exit 1
+  else
+    if [ ! -f "/tmp/mobian-archive-keyring.gpg" ]; then
+      echo "I'm going to download Debian keyring"
+      wget -q -P /tmp "$deb_keyring"
+    #gpg --import mobian-archive-keyring.gpg
+      else
+        echo "Debian keyring already present"
+    fi
     # GPG check key
-    if gpg --verify "$deb_testing_plasma_shasig" >/dev/null 2>&1; then
+    if gpg --verify "/tmp/$deb_testing_phosh_shasig" >/dev/null 2>&1; then
         echo "Valid GPG signature"
     else
         echo "GPG signature not valid"
@@ -197,23 +199,27 @@ deb_img_testing_plasma_sig() {
     fi
 
 # GPG download and import key
-export LANG=C
-
 if [ -z "$deb_keyring" ]; then
     echo "Debian keyring variable URL not available"
-else
-    echo "I'm going to download Debian keyring"
-    wget -q -P /tmp "$deb_keyring"
-    gpg --import mobian-archive-keyring.gpg
-
+    exit 1
+  else
+    if [ ! -f "/tmp/mobian-archive-keyring.gpg" ]; then
+      echo "I'm going to download Debian keyring"
+      wget -q -P /tmp "$deb_keyring"
+    #gpg --import mobian-archive-keyring.gpg
+      else
+        echo "Debian keyring already present"
+    fi
     # GPG check key
-    if gpg --verify "$deb_testing_plasma_shasig" >/dev/null 2>&1; then
+    if gpg --verify "/tmp/$deb_testing_plasma_shasig" >/dev/null 2>&1; then
         echo "Valid GPG signature"
     else
         echo "GPG signature not valid"
         exit 1
     fi
 fi
+
+
 
 # SHA256SUM check
 #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
