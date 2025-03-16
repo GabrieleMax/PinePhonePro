@@ -178,6 +178,7 @@ deb_img_testing_plasma_sig() {
     fi
 
 # GPG download, import and check
+export LANG=C
 wget -q -P /tmp "$deb_keyring"
 gpg --import mobian-archive-keyring.gpg
 if gpg --verify $deb_testing_plasma_shasig 2>&1 | grep -qi "Good signature"; then
