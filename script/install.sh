@@ -10,7 +10,7 @@ FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')
 
 # URLs for different operating systems
 deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/raw/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
-deb_testing_url="https://images.mobian.org/pinephonepro/weekly/"
+deb_testing_url="https://images.mobian.org/pinephonepro/installer/weekly/"
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
 
