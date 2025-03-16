@@ -175,23 +175,32 @@ deb_img_testing_plasma_sig() {
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasums"
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasig"
     wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_imgbmap"
-    wget -q -P /tmp "$deb_keyring"
     fi
-  
-    # SHA256SUM check
-    #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
+
+# GPG download, import and check
+wget -q -P /tmp "$deb_keyring"
+gpg --import mobian-archive-keyring.gpg
+if gpg --verify $deb_testing_plasma_shasig 2>&1 | grep -qi "Good signature"; then
+    echo "Valid GPG signature"
+else
+    echo "GPG signature not valid"
+    exit 1
+fi 
+
+# SHA256SUM check
+#( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
 if [ ! -f "/tmp/$deb_testing_plasma" ]; then
   echo "Image not avalaible"
   exit 1
 else
-    if ( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" ) |  grep -q "OK$"; then
+  if ( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" ) |  grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
-        # Verifica se il file esiste prima di spostarlo
+        # Check if the file exist before to rename it
         if [ -f "/tmp/$deb_testing_plasma" ]; then
             mv "/tmp/$deb_testing_plasma" "/tmp/image.xz"
             
-            # Controlla se mv ha avuto successo
+            # Check if the mv command status
             if [ $? -eq 0 ]; then
                 echo "File renamed to image.xz"
             else
