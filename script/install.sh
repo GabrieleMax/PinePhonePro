@@ -72,7 +72,7 @@ arch_testing_phosh=$(curl -s "$arch_url" | grep -oP 'archlinux-pinephone-pro-pho
 #kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
 kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
 
-# Function to download Debian testing image with Phosh for PinePhone Pro
+# Function to download Mobian testing image with Phosh for PinePhone Pro
 deb_img_testing_phosh() {
     if [ -z "$deb_testing_phosh" ]; then
         echo "File not found."
@@ -108,9 +108,27 @@ deb_img_testing_phosh_sig() {
     wget -q -P /tmp "$deb_testing_url$deb_testing_phosh_shasig"
     wget -q -P /tmp "$deb_testing_url$deb_testing_phosh_imgbmap"
     fi
-  
-    # SHA256SUM check
-    #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
+
+# GPG download and import key
+export LANG=C
+if [ -z "$deb_keyring" ]; then
+  echo "Debian keyring variable url not avalaible"
+else
+  echo "I'm going to download Debian keyring"
+wget -q -P /tmp "$deb_keyring"
+fi
+
+# GPG check key
+gpg --import mobian-archive-keyring.gpg
+if gpg --verify "$deb_testing_plasma_shasig" >/dev/null 2>&1; then
+    echo "Valid GPG signature"
+else
+    echo "GPG signature not valid"
+    exit 1
+fi 
+
+# SHA256SUM check
+#( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
 if [ ! -f "/tmp/$deb_testing_phosh" ]; then
   echo "Image not avalaible"
   exit 1
@@ -179,7 +197,12 @@ deb_img_testing_plasma_sig() {
 
 # GPG download and import key
 export LANG=C
+if [ -z "$deb_keyring" ]; then
+  echo "Debian keyring variable url not avalaible"
+else
+  echo "I'm going to download Debian keyring"
 wget -q -P /tmp "$deb_keyring"
+fi
 
 # GPG check key
 gpg --import mobian-archive-keyring.gpg
@@ -279,18 +302,18 @@ img_burn() {
 
 # Menu with the correct options
 PS3="Choose an option (1-5): "
-select menu in "Download and install Debian testing with Plasma mobile" \
-               "Download and install Debian testing with Phosh mobile" \
+select menu in "Download and install Mobian testing with Plasma mobile" \
+               "Download and install Mobian testing with Phosh mobile" \
                "Download and install Arch Linux with Phosh" \
                "Download and install Kali Nethunter Linux with Phosh" \
                "Exit"; do
     case $menu in
-        "Download and install Debian testing with Plasma mobile")
+        "Download and install Mobian testing with Plasma mobile")
             deb_img_testing_plasma 
             deb_img_testing_plasma_sig
             img_burn 
             ;;
-        "Download and install Debian testing with Phosh mobile")
+        "Download and install Mobian testing with Phosh mobile")
             deb_img_testing_phosh
             deb_img_testing_phosh_sig
             img_burn 
