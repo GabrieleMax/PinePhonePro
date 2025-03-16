@@ -96,9 +96,9 @@ deb_img_testing_phosh() {
 
 # Function to check Mobian testing image with phosh for PinePhone Pro signature
 deb_img_testing_phosh_sig() {
-    deb_testing_phosh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.sha256sums' | sort -r | head -n 1)
-    deb_testing_phosh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
-    deb_testing_phosh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.img.bmap' | sort -r | head -n 1)
+    deb_testing_phosh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.sha256sums' | sort -r | head -n 1)
+    deb_testing_phosh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
+    deb_testing_phosh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.bmap' | sort -r | head -n 1)
     
     if [ -f /tmp/$deb_testing_phosh_shasums ] && [ -f /tmp/$deb_testing_phosh_shasig ] && [ -f /tmp/$deb_testing_phosh_imgbmap ]; then
       echo "Signature files already available and I don't download them."
@@ -185,9 +185,9 @@ deb_img_testing_plasma() {
 
 # Function to check Mobian testing image with Plasma for PinePhone Pro signature
 deb_img_testing_plasma_sig() {
-    deb_testing_plasma_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.sha256sums' | sort -r | head -n 1)
-    deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
-    deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
+    deb_testing_plasma_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums' | sort -r | head -n 1)
+    deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
+    deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
     
     if [ -f /tmp/$deb_testing_plasma_shasums ] && [ -f /tmp/$deb_testing_plasma_shasig ] && [ -f /tmp/$deb_testing_plasma_imgbmap ]; then
       echo "Signature files already available and I don't download them."
@@ -219,8 +219,6 @@ if [ -z "$deb_keyring" ]; then
     fi
 fi
 
-
-
 # SHA256SUM check
 #( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
 if [ ! -f "/tmp/$deb_testing_plasma" ]; then
@@ -251,7 +249,6 @@ else
     fi
 fi
 }
-
 
 # Function to download the latest Arch Linux image for PinePhone Pro
 arch_img_testing_phosh() {
