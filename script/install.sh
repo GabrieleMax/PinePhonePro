@@ -300,7 +300,7 @@ img_burn() {
     # Write the image to the device
     echo "Writing image to /dev/$device_name wait few minutes..."
     cat "/tmp/image.xz" | unxz -c > /tmp/image.img
-    sudo dd if=/tmp/image.img of=/dev/$device_name bs=4M status=progress conv=fsync,notrunc iflag=direct oflag=direct
+    sudo dd if=/tmp/image.img of=/dev/$device_name status=progress bs=4M conv=fdatasync iflag=sync
     echo "Writing process complete."
 
     # Ensure script exits after burning process
