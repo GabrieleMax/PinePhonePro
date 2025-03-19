@@ -118,6 +118,7 @@ if [ -z "$deb_keyring" ]; then
       echo "I'm going to download Debian keyring"
       wget -q -P /tmp "$deb_keyring"
     #gpg --import mobian-archive-keyring.gpg
+    #gpg --list-keys --with-colons | grep "$(gpg --with-colons --import-options show-only --import mobian-archive-keyring.gpg | grep '^fpr' | cut -d: -f10)"
       else
         echo "Debian keyring already present"
     fi
@@ -207,6 +208,7 @@ if [ -z "$deb_keyring" ]; then
       echo "I'm going to download Debian keyring"
       wget -q -P /tmp "$deb_keyring"
     #gpg --import mobian-archive-keyring.gpg
+    #gpg --list-keys --with-colons | grep "$(gpg --with-colons --import-options show-only --import mobian-archive-keyring.gpg | grep '^fpr' | cut -d: -f10)"
       else
         echo "Debian keyring already present"
     fi
@@ -296,7 +298,7 @@ img_burn() {
     fi
 
     # Write the image to the device
-    echo "Writing image to /dev/$device_name..."
+    echo "Writing image to /dev/$device_name wait few minutes..."
     cat "/tmp/image.xz" | unxz -c > /tmp/image.img
     sudo dd if=/tmp/image.img of=/dev/$device_name bs=4M status=progress conv=fsync,notrunc iflag=direct oflag=direct
     echo "Writing process complete."
