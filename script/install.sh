@@ -239,16 +239,14 @@ arch_img_testing_phosh() {
 
 # Function to download the latest Kali Nethunter image for PinePhone Pro
 kali_nethunter_phosh_img() {
-    echo "Trying to download the Kali Nethunter image..."
-    kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1)"
-    if [ -n "$kali_nethunter" ]; then
-        echo "Latest Kali Nethunter image found: $kali_nethunter"
-        wget --progress=dot -c -d --timeout=60 --tries=3 "$kali_nethunter" -O "/tmp/image.xz"
-        echo "Download complete: $kali_nethunter"
-        img_burn  # Automatically call the burn function after downloading
-        exit  # Exit after burn
-    else
-        echo "Kali Nethunter image not found. Please check the URL and file availability."
+    kali_nethunter_img="$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1)"
+    
+    if [ -f "/tmp/$kali_nethunter" ]; then
+        echo "Latest Kali Nethunter image founded and I don't need to download it."
+      else
+        echo "I'm going to download latest Kali Nethunter image:"
+        wget --progress=dot -c -d --timeout=60 --tries=3 "$kali_nethunter_url$kali_nethunter_img" -P /tmp
+        echo "Download complete: $kali_nethunter_img"
     fi  
 }
 
