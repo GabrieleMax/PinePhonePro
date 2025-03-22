@@ -36,34 +36,6 @@ if [[ "$user_input" != "y" && "$user_input" != "Y" ]]; then
     exit 1
 fi
 
-# Display the initial message
-echo -e "\n\nConnect the PinePhone Pro and after it press the volume up button until the LED turns blue:"
-
-# Save the initial list of devices (excluding partitions)
-initial_devices=$(lsblk -dn -o NAME | sort)
-
-# Continuously monitor for a new device
-while true; do
-    # Save the current list of devices (excluding partitions)
-    current_devices=$(lsblk -dn -o NAME | sort)
-
-    # Compare the current list with the initial list
-    new_device=$(comm -13 <(echo "$initial_devices") <(echo "$current_devices"))
-
-    # If a new device is found, take the desired action
-    if [ -n "$new_device" ]; then
-        echo "New device connected: $new_device"
-        device_name="$new_device"  # Assign the device name to a variable
-        break  # Exit the loop
-    fi
-
-    # Sleep to avoid consuming too much CPU
-    sleep 1
-done
-
-# Now you can use the $device_name variable
-echo "The connected device is: /dev/$device_name"
-
 # Retrieve the list of downloadable files from the websites, sort them, and take the latest one
 deb_testing_phosh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-installer-rockchip-plasma-mobile-\d{8}\.img\.xz' | sort -r | head -n 1)
@@ -280,6 +252,36 @@ kali_nethunter_phosh_img() {
     fi  
 }
 
+devicecheck() {
+# Display the initial message
+echo -e "\n\nConnect the PinePhone Pro and after it press the volume up button until the LED turns blue:"
+
+# Save the initial list of devices (excluding partitions)
+initial_devices=$(lsblk -dn -o NAME | sort)
+
+# Continuously monitor for a new device
+while true; do
+    # Save the current list of devices (excluding partitions)
+    current_devices=$(lsblk -dn -o NAME | sort)
+
+    # Compare the current list with the initial list
+    new_device=$(comm -13 <(echo "$initial_devices") <(echo "$current_devices"))
+
+    # If a new device is found, take the desired action
+    if [ -n "$new_device" ]; then
+        echo "New device connected: $new_device"
+        device_name="$new_device"  # Assign the device name to a variable
+        break  # Exit the loop
+    fi
+
+    # Sleep to avoid consuming too much CPU
+    sleep 1
+done
+
+# Now you can use the $device_name variable
+echo "The connected device is: /dev/$device_name"
+}
+
 # Function to burn the image to the device
 img_burn() {
     # Check if device_name is set and not empty
@@ -318,11 +320,13 @@ select menu in "Download and install Mobian testing with Plasma mobile" \
         "Download and install Mobian testing with Plasma mobile")
             deb_img_testing_plasma 
             deb_img_testing_plasma_sig
+            devicecheck
             img_burn 
             ;;
         "Download and install Mobian testing with Phosh mobile")
             deb_img_testing_phosh
             deb_img_testing_phosh_sig
+            devicechek
             img_burn 
             ;;
        "Download and install Arch Linux with Phosh")
