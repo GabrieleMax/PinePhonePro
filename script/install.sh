@@ -42,7 +42,7 @@ deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-in
 arch_testing_phosh=$(curl -s "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 #kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}\.\d{2}-pinephonepro\.img\.xz' | sort -r | head -n 1)
 #kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
-kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
+#kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
 
 # Function to download Mobian testing image with Phosh for PinePhone Pro
 deb_img_testing_phosh() {
@@ -230,7 +230,6 @@ arch_img_testing_phosh() {
         echo "Latest Arch Linux file found: $arch_testing_phosh"
         wget --progress=dot -c -d --timeout=60 --tries=3 "$arch_url$arch_testing_phosh" -O "/tmp/image.xz"
         echo "Download complete: $arch_testing_phosh"
-        img_burn  # Automatically call the burn function after downloading
         exit  # Exit after burn
     else
         echo "Arch Linux file not found."
@@ -241,13 +240,49 @@ arch_img_testing_phosh() {
 kali_nethunter_phosh_img() {
     kali_nethunter_img="$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1)"
     
-    if [ -f "/tmp/$kali_nethunter" ]; then
+    if [ -f "/tmp/$kali_nethunter_img" ]; then
         echo "Latest Kali Nethunter image founded and I don't need to download it."
       else
         echo "I'm going to download latest Kali Nethunter image:"
         wget --progress=dot -c -d --timeout=60 --tries=3 "$kali_nethunter_url$kali_nethunter_img" -P /tmp
         echo "Download complete: $kali_nethunter_img"
     fi  
+}
+
+# Function to check Kali Nethunter signature
+kali_nethunter_phosh_sig() {
+
+# Download SHA256SUMS    
+    if [ -f /tmp/SHA256SUMS ]; then
+      echo "Signature file already available and I don't download it."
+    else
+      echo "I'm going to download signature files."
+    wget -q -P /tmp "${kali_nethunter_url}SHA256SUMS"
+    fi
+
+# SHA256SUM check
+  if ( cd /tmp && sha256sum -c SHA256SUMS ) |  grep -q "OK$"; then
+        echo "SHA256SUM verification passed. Renaming file..."
+
+        # Check if the file exist before to rename it
+        if [ -f "/tmp/$kali_nethunter_img" ]; then
+            mv "/tmp/$kali_nethunter_img" "/tmp/image.xz"
+            
+            # Check if the mv command status
+            if [ $? -eq 0 ]; then
+                echo "File renamed to image.xz"
+            else
+                echo "Error: Failed to rename the file."
+                exit 1
+            fi
+        else
+            echo "File to rename not found in /tmp."
+            exit 1
+        fi
+    else
+        echo "Signature failed: SHA256SUM verification did not pass."
+        exit 1
+    fi
 }
 
 devicecheck() {
@@ -324,7 +359,7 @@ select menu in "Download and install Mobian testing with Plasma mobile" \
         "Download and install Mobian testing with Phosh mobile")
             deb_img_testing_phosh
             deb_img_testing_phosh_sig
-            devicechek
+            devicecheck
             img_burn 
             ;;
        "Download and install Arch Linux with Phosh")
@@ -332,6 +367,9 @@ select menu in "Download and install Mobian testing with Plasma mobile" \
             ;;
         "Download and install Kali Nethunter Linux with Phosh")
             kali_nethunter_phosh_img
+            kali_nethunter_phosh_sig
+            devicecheck
+            img_burn
             ;;
         "Exit")
             echo "Exiting the script."
