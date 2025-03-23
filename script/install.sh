@@ -199,7 +199,7 @@ if [ ! -f "/tmp/$deb_testing_plasma" ]; then
   echo "Image not avalaible"
   exit 1
 else
-  if ( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" ) |  grep -q "OK$"; then
+  if ( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" 2>/dev/null ) |  grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
         # Check if the file exist before to rename it
