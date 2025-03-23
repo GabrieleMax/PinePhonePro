@@ -287,7 +287,7 @@ kali_nethunter_phosh_sig() {
 
 devicecheck() {
 # Display the initial message
-echo -e "\n\nConnect the PinePhone Pro and after it press the volume up button until the LED turns blue:"
+echo -e "\n\nConnect the PinePhone Pro and after it press the volume up button until the LED turns blue or insert the microsd:"
 
 # Save the initial list of devices (excluding partitions)
 initial_devices=$(lsblk -dn -o NAME | sort)
