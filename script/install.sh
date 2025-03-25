@@ -5,9 +5,6 @@
 echo -e "\n\n"
 cat splash_screen.txt  
 
-# Find the user with UID 1000 (first non-root user)
-FIRSTUSER=$(grep "1000" /etc/passwd | awk -F ':' '{print $1}')                                                                
-
 # URLs for different operating systems
 deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/raw/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
 deb_testing_url="https://images.mobian.org/pinephonepro/installer/weekly/"
@@ -24,17 +21,24 @@ fi
 echo -e "\n\n"
 cat disclaimer.txt
 
-# Prompt per l'utente
+# User prompt
 echo "Press 'y' to continue or any other key to exit."
 
-# Lettura dell'input dell'utente
-read -p "Continue? (y/n): " user_input
+# Read user input
+while true; do
+    read -p "Continue? (y/n): " user_input
+    if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
+      break
+    elif [[ "$user_input" == "n" || "$user_input" == "N" ]]; then
+      echo "Bye bye! ;)"
+        exit 0
+    else
+      echo "Input not valid."
+    fi
+done
 
-# Controlla se l'utente ha premuto 'y' o 'Y'
-if [[ "$user_input" != "y" && "$user_input" != "Y" ]]; then
-    echo "Exiting the script."
-    exit 1
-fi
+# Continue the script
+echo "Right answer: $user_input"
 
 # Retrieve the list of downloadable files from the websites, sort them, and take the latest one
 deb_testing_phosh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
@@ -323,14 +327,26 @@ img_burn() {
         exit 1
     fi
 
-    # Confirm the device where the image will be written
-    echo "The disk that will be erased is: /dev/$device_name"
-
     # Check if the device exists and if it is accessible
     if [ ! -b "/dev/$device_name" ]; then
         echo "Error: Device /dev/$device_name is not available."
         exit 1
     fi
+
+    # Confirm the device where the image will be written
+    echo "The disk that will be erased is: /dev/$device_name"
+
+while true; do
+    read -p "Continue? (y/n): " user_input
+    if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
+      break
+    elif [[ "$user_input" == "n" || "$user_input" == "N" ]]; then
+      echo "Bye bye! ;)"
+        exit 0
+    else
+      echo "Input not valid."
+    fi  
+done  
 
     # Write the image to the device
     echo "Writing image to /dev/$device_name wait few minutes..."
