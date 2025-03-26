@@ -8,7 +8,8 @@ cat splash_screen.txt
 # URLs for different operating systems
 deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/raw/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
 deb_testing_url="https://images.mobian.org/pinephonepro/installer/weekly/"
-arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/"
+arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/download/20241223/"
+arch_img=$(curl -s https://github.com/dreemurrs-embedded/Pine64-Arch/releases/ | grep -oP 'href="/dreemurrs-embedded/Pine64-Arch/releases/download/[^"]*archlinux-pinephone-pro-phosh[^"]*\.img\.xz"' | sed -E 's/^href=".*\/([^"]*)"/\1/' | sort -r | head -n 1)
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
 
 # Verifica se il file disclaimer.txt esiste
@@ -43,7 +44,6 @@ echo "Right answer: $user_input"
 # Retrieve the list of downloadable files from the websites, sort them, and take the latest one
 deb_testing_phosh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-installer-rockchip-plasma-mobile-\d{8}\.img\.xz' | sort -r | head -n 1)
-arch_testing_phosh=$(curl -s "$arch_url" | grep -oP 'archlinux-pinephone-pro-phosh-\d{8}.img.xz' | sort -r | head -n 1)
 #kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}\.\d{2}-pinephonepro\.img\.xz' | sort -r | head -n 1)
 #kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
 #kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
@@ -229,12 +229,11 @@ fi
 }
 
 # Function to download the latest Arch Linux image for PinePhone Pro
-arch_img_testing_phosh() {
-    if [ -n "$arch_testing_phosh" ]; then
-        echo "Latest Arch Linux file found: $arch_testing_phosh"
-        wget --progress=dot -c -d --timeout=60 --tries=3 "$arch_url$arch_testing_phosh" -O "/tmp/image.xz"
-        echo "Download complete: $arch_testing_phosh"
-        exit  # Exit after burn
+arch_img_phosh() {
+    if [ -n "$arch_img" ]; then
+        echo "Latest Arch Linux file found: $arch_img and I don't need to download it:"
+        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/tmp/$arch_img" "$arch_url$arch_img"
+        echo "Download complete: $arch_img"
     else
         echo "Arch Linux file not found."
     fi
@@ -379,7 +378,7 @@ select menu in "Download and install Mobian testing with Plasma mobile" \
             img_burn 
             ;;
        "Download and install Arch Linux with Phosh")
-            arch_img_testing_phosh
+            arch_img_phosh
             ;;
         "Download and install Kali Nethunter Linux with Phosh")
             kali_nethunter_phosh_img
