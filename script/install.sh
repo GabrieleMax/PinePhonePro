@@ -39,8 +39,13 @@ while true; do
     fi
 done
 
-# Continue the script
-echo "Right answer: $user_input"
+# Check internet link
+while ! ping -c 1 8.8.8.8 &> /dev/null; do
+  echo "Internet is not avalaible, please connect it if you want to download images."
+  sleep 5
+done
+
+echo "Internet is avalaible and I can continue the script."
 
 # Retrieve the list of downloadable files from the websites, sort them, and take the latest one
 deb_testing_phosh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
