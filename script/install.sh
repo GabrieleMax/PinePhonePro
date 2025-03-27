@@ -240,6 +240,45 @@ arch_img_phosh() {
     fi
 }
 
+# Function to check Arch image signature
+arch_img_phosh_sig() {
+
+# Download SHA256SUMS    
+    if [ -f /tmp/${arch_img}.sig ]; then
+      echo "Signature file already available and I don't download it."
+    else
+      echo "I'm going to download signature files."
+    wget -q -P /tmp "${arch_url}${arch_img}.sig"
+    fi
+
+# Add GPG key
+gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys F09A933C0FE0331E558CA4E166CAB7EAA45DD781
+
+# GPG check
+  if ( cd /tmp && gpg --verify "${arh_img}.sig" "${arch_img}" ) |  grep -q "OK$"; then
+        echo "GPG verification passed. Renaming file..."
+
+        # Check if the file exist before to rename it
+        if [ -f "/tmp/$arch_img" ]; then
+            mv "/tmp/$arch_img" "/tmp/image.xz"
+            
+            # Check if the mv command status
+            if [ $? -eq 0 ]; then
+                echo "File renamed to image.xz"
+            else
+                echo "Error: Failed to rename the file."
+                exit 1
+            fi
+        else
+            echo "File to rename not found in /tmp."
+            exit 1
+        fi
+    else
+        echo "Signature failed: SHA256SUM verification did not pass."
+        exit 1
+    fi
+}
+
 # Function to download the latest Kali Nethunter image for PinePhone Pro
 kali_nethunter_phosh_img() {
     kali_nethunter_img="$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1)"
@@ -380,6 +419,9 @@ select menu in "Download and install Mobian testing with Plasma mobile" \
             ;;
        "Download and install Arch Linux with Phosh")
             arch_img_phosh
+            arch_img_phosh_sig
+            devicecheck
+            img_burn 
             ;;
         "Download and install Kali Nethunter Linux with Phosh")
             kali_nethunter_phosh_img
