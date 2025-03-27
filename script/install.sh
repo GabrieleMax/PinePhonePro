@@ -8,7 +8,7 @@ cat splash_screen.txt
 # URLs for different operating systems
 deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/raw/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
 deb_testing_url="https://images.mobian.org/pinephonepro/installer/weekly/"
-arch_img=$(curl -s https://github.com/dreemurrs-embedded/Pine64-Arch/releases/ | grep -o "archlinux-pinephone-pro-phosh-[0-9]\+" | sort -r | head -n 1)
+arch_img=$(curl -s https://github.com/dreemurrs-embedded/Pine64-Arch/releases/ | grep -o "archlinux-pinephone-pro-phosh-[0-9]\+.img.xz" | sort -r | head -n 1)
 arch_img_date=$(echo $arch_img | grep -o '[0-9]\+')
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/download/${arch_img_date}/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
@@ -231,19 +231,20 @@ fi
 
 # Function to download the latest Arch Linux image for PinePhone Pro
 arch_img_phosh() {
-    if [ -n "$arch_img" ]; then
+   if [ -f "/tmp/$arch_img" ]; then
+        echo "File $arch_img already exists in /tmp/ skipping download."
+    else
         echo "Latest Arch Linux file found: $arch_img"
         wget --progress=dot -c -d --timeout=60 --tries=3 -O "/tmp/$arch_img" "$arch_url$arch_img"
         echo "Download complete: $arch_img"
-    else
-        echo "Arch Linux file not found."
     fi
 }
 
 # Function to check Arch image signature
 arch_img_phosh_sig() {
 
-# Download SHA256SUMS    
+  echo "The img file is $arch_img and the sig file is ${arch_img}.sig"
+# Download arch signature file    
     if [ -f /tmp/${arch_img}.sig ]; then
       echo "Signature file already available and I don't download it."
     else
@@ -255,7 +256,7 @@ arch_img_phosh_sig() {
 gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys F09A933C0FE0331E558CA4E166CAB7EAA45DD781
 
 # GPG check
-  if ( cd /tmp && gpg --verify "${arh_img}.sig" "${arch_img}" ) |  grep -q "OK$"; then
+  if ( cd /tmp && gpg --verify "${arch_img}.sig" "${arch_img}" ); then
         echo "GPG verification passed. Renaming file..."
 
         # Check if the file exist before to rename it
@@ -274,7 +275,7 @@ gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys F09A933C0FE0331E558CA4E1
             exit 1
         fi
     else
-        echo "Signature failed: SHA256SUM verification did not pass."
+        echo "Signature failed, GPG verification did not pass."
         exit 1
     fi
 }
