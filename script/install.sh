@@ -12,7 +12,7 @@ arch_img=$(curl -s https://github.com/dreemurrs-embedded/Pine64-Arch/releases/ |
 arch_img_date=$(echo $arch_img | grep -o '[0-9]\+')
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/download/${arch_img_date}/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
-postmarketOS_plasma_url=$(https://images.postmarketos.org/bpo/v24.12/pine64-pinephonepro/plasma-mobile/)
+postmarketOS_plasma_url="https://images.postmarketos.org/bpo/v24.12/pine64-pinephonepro/plasma-mobile/"
 postmarketOS_plasma_img_date=$(curl -s https://images.postmarketos.org/bpo/v24.12/pine64-pinephonepro/plasma-mobile/ | grep -oP "[0-9]{8}-[0-9]{4}" | sort -r | head -n 1)
 postmarketOS_plasma_img=$(curl -s "$postmarketOS_plasma_url$postmarketOS_plasma_img_date" | grep -o '202[0-9]\{5\}-[0-9]\{4\}-postmarketOS-[^"]*\.img\.xz' | sort -r | head -n 1)
 
@@ -453,7 +453,7 @@ select menu in "Download and install Mobian testing with Plasma mobile" \
             ;;
         "Download and install postmarketOS with Plasma Mobile")
             postmarketOS_plasma_img
-            postmarketOS_plasma_sig
+            #postmarketOS_plasma_sig
             devicecheck
             img_burn
             ;;
