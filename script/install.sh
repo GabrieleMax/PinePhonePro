@@ -14,7 +14,8 @@ arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/download/${
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
 postmarketOS_plasma_url="https://images.postmarketos.org/bpo/v24.12/pine64-pinephonepro/plasma-mobile/"
 postmarketOS_plasma_img_date=$(curl -s https://images.postmarketos.org/bpo/v24.12/pine64-pinephonepro/plasma-mobile/ | grep -oP "[0-9]{8}-[0-9]{4}" | sort -r | head -n 1)
-postmarketOS_plasma_img=$(curl -s "$postmarketOS_plasma_url$postmarketOS_plasma_img_date" | grep -o '202[0-9]\{5\}-[0-9]\{4\}-postmarketOS-[^"]*\.img\.xz' | sort -r | head -n 1)
+#postmarketOS_plasma_img=$(curl -s "$postmarketOS_plasma_url$postmarketOS_plasma_img_date" | grep -o '202[0-9]\{5\}-[0-9]\{4\}-postmarketOS-[^"]*\.img\.xz' | sort -r | head -n 1)
+postmarketOS_plasma_img=$(curl -s "$postmarketOS_plasma_url$postmarketOS_plasma_img_date/" | grep -o '202[0-9]\{5\}-[0-9]\{4\}-postmarketOS-[^"]*\.img\.xz' | sort -r | head -n 1)
 
 # Verifica se il file disclaimer.txt esiste
 if [ ! -f disclaimer.txt ]; then
@@ -344,6 +345,7 @@ postmarketOS_plasma_img() {
         echo "Latest postmarketOS with Plasma Mobile founded and I don't need to download it."
       else
         echo "I'm going to download latest postmarketOS with Plasma Mobile image:"
+        echo "The download url is $postmarketOS_plasma_url$postmarketOS_plasma_img_date$postmarketOS_plasma_img"
         wget --progress=dot -c -d --timeout=60 --tries=3 "$postmarketOS_plasma_url$postmarketOS_plasma_img_date$postmarketOS_plasma_img" -P /tmp
         echo "Download complete: $postmarketOS_plasma_img"
     fi  
