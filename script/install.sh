@@ -12,6 +12,9 @@ arch_img=$(curl -s https://github.com/dreemurrs-embedded/Pine64-Arch/releases/ |
 arch_img_date=$(echo $arch_img | grep -o '[0-9]\+')
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/download/${arch_img_date}/"
 kali_nethunter_url=$(lynx -dump -listonly -nonumbers https://kali.download/nethunterpro-images/ | sort -r | head -n 1)
+postmarketOS_plasma_url=$(https://images.postmarketos.org/bpo/v24.12/pine64-pinephonepro/plasma-mobile/)
+postmarketOS_plasma_img_date=$(curl -s https://images.postmarketos.org/bpo/v24.12/pine64-pinephonepro/plasma-mobile/ | grep -oP "[0-9]{8}-[0-9]{4}" | sort -r | head -n 1)
+postmarketOS_plasma_img=$(curl -s "$postmarketOS_plasma_url$postmarketOS_plasma_img_date" | grep -o '202[0-9]\{5\}-[0-9]\{4\}-postmarketOS-[^"]*\.img\.xz' | sort -r | head -n 1)
 
 # Verifica se il file disclaimer.txt esiste
 if [ ! -f disclaimer.txt ]; then
@@ -334,6 +337,18 @@ kali_nethunter_phosh_sig() {
     fi
 }
 
+# Function to download the latest postmarketOS with Plasma Mobile
+postmarketOS_plasma_img() {
+    
+    if [ -f "/tmp/$postmarketOS_plasma_img" ]; then
+        echo "Latest postmarketOS with Plasma Mobile founded and I don't need to download it."
+      else
+        echo "I'm going to download latest postmarketOS with Plasma Mobile image:"
+        wget --progress=dot -c -d --timeout=60 --tries=3 "$postmarketOS_plasma_url$postmarketOS_plasma_img_date$postmarketOS_plasma_img" -P /tmp
+        echo "Download complete: $postmarketOS_plasma_img"
+    fi  
+}
+
 devicecheck() {
 # Display the initial message
 echo -e "\n\nConnect the PinePhone Pro and after it press the volume up button until the LED turns blue or insert the microsd:"
@@ -404,11 +419,12 @@ done
 }
 
 # Menu with the correct options
-PS3="Choose an option (1-5): "
+PS3="Choose an option (1-6): "
 select menu in "Download and install Mobian testing with Plasma mobile" \
                "Download and install Mobian testing with Phosh mobile" \
                "Download and install Arch Linux with Phosh" \
                "Download and install Kali Nethunter Linux with Phosh" \
+               "Download and install postmarketOS with Plasma Mobile" \
                "Exit"; do
     case $menu in
         "Download and install Mobian testing with Plasma mobile")
@@ -432,6 +448,12 @@ select menu in "Download and install Mobian testing with Plasma mobile" \
         "Download and install Kali Nethunter Linux with Phosh")
             kali_nethunter_phosh_img
             kali_nethunter_phosh_sig
+            devicecheck
+            img_burn
+            ;;
+        "Download and install postmarketOS with Plasma Mobile")
+            postmarketOS_plasma_img
+            postmarketOS_plasma_sig
             devicecheck
             img_burn
             ;;
