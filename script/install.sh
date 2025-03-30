@@ -5,6 +5,9 @@
 echo -e "\n\n"
 cat splash_screen.txt  
 
+# Download dir
+DOWNLOAD_DIR=/tmp
+
 # URLs for different operating systems
 deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/raw/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
 deb_testing_url="https://images.mobian.org/pinephonepro/installer/weekly/"
@@ -65,11 +68,11 @@ deb_img_testing_phosh() {
         return 1  # Termina solo la funzione, lo script continua
     fi  
 
-    if [ -f "/tmp/$deb_testing_phosh" ]; then
-        echo "File already exists in /tmp/. Skipping download."
+    if [ -f "/$DOWNLOAD_DIR/$deb_testing_phosh" ]; then
+        echo "File already exists in /$DOWNLOAD_DIR/. Skipping download."
     else
         echo "Latest file found: $deb_testing_phosh"
-        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/tmp/$deb_testing_phosh" "$deb_testing_url$deb_testing_phosh"
+        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/$DOWNLOAD_DIR/$deb_testing_phosh" "$deb_testing_url$deb_testing_phosh"
 
         if [ $? -eq 0 ]; then
             echo "Download complete: $deb_testing_phosh"
@@ -86,13 +89,13 @@ deb_img_testing_phosh_sig() {
     deb_testing_phosh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
     deb_testing_phosh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.bmap' | sort -r | head -n 1)
     
-    if [ -f /tmp/$deb_testing_phosh_shasums ] && [ -f /tmp/$deb_testing_phosh_shasig ] && [ -f /tmp/$deb_testing_phosh_imgbmap ]; then
+    if [ -f /$DOWNLOAD_DIR/$deb_testing_phosh_shasums ] && [ -f /$DOWNLOAD_DIR/$deb_testing_phosh_shasig ] && [ -f /$DOWNLOAD_DIR/$deb_testing_phosh_imgbmap ]; then
       echo "Signature files already available and I don't download them."
     else
       echo "I'm going to download signature files."
-    wget -q -P /tmp "$deb_testing_url$deb_testing_phosh_shasums"
-    wget -q -P /tmp "$deb_testing_url$deb_testing_phosh_shasig"
-    wget -q -P /tmp "$deb_testing_url$deb_testing_phosh_imgbmap"
+    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_phosh_shasums"
+    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_phosh_shasig"
+    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_phosh_imgbmap"
     fi
 
 # GPG download and import key
@@ -100,16 +103,16 @@ if [ -z "$deb_keyring" ]; then
     echo "Debian keyring variable URL not available"
     exit 1
   else
-    if [ ! -f "/tmp/mobian-archive-keyring.gpg" ]; then
+    if [ ! -f "/$DOWNLOAD_DIR/mobian-archive-keyring.gpg" ]; then
       echo "I'm going to download Debian keyring"
-      wget -q -P /tmp "$deb_keyring"
+      wget -q -P /$DOWNLOAD_DIR "$deb_keyring"
     #gpg --import mobian-archive-keyring.gpg
     #gpg --list-keys --with-colons | grep "$(gpg --with-colons --import-options show-only --import mobian-archive-keyring.gpg | grep '^fpr' | cut -d: -f10)"
       else
         echo "Debian keyring already present"
     fi
     # GPG check key
-    if gpg --verify "/tmp/$deb_testing_phosh_shasig" >/dev/null 2>&1; then
+    if gpg --verify "/$DOWNLOAD_DIR/$deb_testing_phosh_shasig" >/dev/null 2>&1; then
         echo "Valid GPG signature"
     else
         echo "GPG signature not valid"
@@ -118,17 +121,17 @@ if [ -z "$deb_keyring" ]; then
 fi
 
 # SHA256SUM check
-#( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
-if [ ! -f "/tmp/$deb_testing_phosh" ]; then
+#( cd /$DOWNLOAD_DIR && sha256sum -c "$deb_testing_plasma_shasums" )
+if [ ! -f "/$DOWNLOAD_DIR/$deb_testing_phosh" ]; then
   echo "Image not avalaible"
   exit 1
 else
-    if ( cd /tmp && sha256sum -c "$deb_testing_phosh_shasums" ) |  grep -q "OK$"; then
+    if ( cd /$DOWNLOAD_DIR && sha256sum -c "$deb_testing_phosh_shasums" ) |  grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
         # Verifica se il file esiste prima di spostarlo
-        if [ -f "/tmp/$deb_testing_phosh" ]; then
-            mv "/tmp/$deb_testing_phosh" "/tmp/image.xz"
+        if [ -f "/$DOWNLOAD_DIR/$deb_testing_phosh" ]; then
+            mv "/$DOWNLOAD_DIR/$deb_testing_phosh" "/$DOWNLOAD_DIR/image.xz"
             
             # Controlla se mv ha avuto successo
             if [ $? -eq 0 ]; then
@@ -138,7 +141,7 @@ else
                 exit 1
             fi
         else
-            echo "File to rename not found in /tmp."
+            echo "File to rename not found in /$DOWNLOAD_DIR."
             exit 1
         fi
     else
@@ -155,11 +158,11 @@ deb_img_testing_plasma() {
         return 1  # Termina solo la funzione, lo script continua
     fi  
 
-    if [ -f "/tmp/$deb_testing_plasma" ]; then
-        echo "File already exists in /tmp/. Skipping download."
+    if [ -f "/$DOWNLOAD_DIR/$deb_testing_plasma" ]; then
+        echo "File already exists in /$DOWNLOAD_DIR/. Skipping download."
     else
         echo "Latest file found: $deb_testing_plasma"
-        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/tmp/$deb_testing_plasma" "$deb_testing_url$deb_testing_plasma"
+        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/$DOWNLOAD_DIR/$deb_testing_plasma" "$deb_testing_url$deb_testing_plasma"
 
         if [ $? -eq 0 ]; then
             echo "Download complete: $deb_testing_plasma"
@@ -176,13 +179,13 @@ deb_img_testing_plasma_sig() {
     deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
     deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
     
-    if [ -f /tmp/$deb_testing_plasma_shasums ] && [ -f /tmp/$deb_testing_plasma_shasig ] && [ -f /tmp/$deb_testing_plasma_imgbmap ]; then
+    if [ -f /$DOWNLOAD_DIR/$deb_testing_plasma_shasums ] && [ -f /$DOWNLOAD_DIR/$deb_testing_plasma_shasig ] && [ -f /$DOWNLOAD_DIR/$deb_testing_plasma_imgbmap ]; then
       echo "Signature files already available and I don't download them."
     else
       echo "I'm going to download signature files."
-    wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasums"
-    wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_shasig"
-    wget -q -P /tmp "$deb_testing_url$deb_testing_plasma_imgbmap"
+    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_plasma_shasums"
+    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_plasma_shasig"
+    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_plasma_imgbmap"
     fi
 
 # GPG download and import key
@@ -190,16 +193,16 @@ if [ -z "$deb_keyring" ]; then
     echo "Debian keyring variable URL not available"
     exit 1
   else
-    if [ ! -f "/tmp/mobian-archive-keyring.gpg" ]; then
+    if [ ! -f "/$DOWNLOAD_DIR/mobian-archive-keyring.gpg" ]; then
       echo "I'm going to download Debian keyring"
-      wget -q -P /tmp "$deb_keyring"
+      wget -q -P /$DOWNLOAD_DIR "$deb_keyring"
     #gpg --import mobian-archive-keyring.gpg
     #gpg --list-keys --with-colons | grep "$(gpg --with-colons --import-options show-only --import mobian-archive-keyring.gpg | grep '^fpr' | cut -d: -f10)"
       else
         echo "Debian keyring already present"
     fi
     # GPG check key
-    if gpg --verify "/tmp/$deb_testing_plasma_shasig" >/dev/null 2>&1; then
+    if gpg --verify "/$DOWNLOAD_DIR/$deb_testing_plasma_shasig" >/dev/null 2>&1; then
         echo "Valid GPG signature"
     else
         echo "GPG signature not valid"
@@ -208,17 +211,17 @@ if [ -z "$deb_keyring" ]; then
 fi
 
 # SHA256SUM check
-#( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" )
-if [ ! -f "/tmp/$deb_testing_plasma" ]; then
+#( cd /$DOWNLOAD_DIR && sha256sum -c "$deb_testing_plasma_shasums" )
+if [ ! -f "/$DOWNLOAD_DIR/$deb_testing_plasma" ]; then
   echo "Image not avalaible"
   exit 1
 else
-  if ( cd /tmp && sha256sum -c "$deb_testing_plasma_shasums" 2>/dev/null ) |  grep -q "OK$"; then
+  if ( cd /$DOWNLOAD_DIR && sha256sum -c "$deb_testing_plasma_shasums" 2>/dev/null ) |  grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
         # Check if the file exist before to rename it
-        if [ -f "/tmp/$deb_testing_plasma" ]; then
-            mv "/tmp/$deb_testing_plasma" "/tmp/image.xz"
+        if [ -f "/$DOWNLOAD_DIR/$deb_testing_plasma" ]; then
+            mv "/$DOWNLOAD_DIR/$deb_testing_plasma" "/$DOWNLOAD_DIR/image.xz"
             
             # Check if the mv command status
             if [ $? -eq 0 ]; then
@@ -228,7 +231,7 @@ else
                 exit 1
             fi
         else
-            echo "File to rename not found in /tmp."
+            echo "File to rename not found in /$DOWNLOAD_DIR."
             exit 1
         fi
     else
@@ -240,11 +243,11 @@ fi
 
 # Function to download the latest Arch Linux image for PinePhone Pro
 arch_img_phosh() {
-   if [ -f "/tmp/$arch_img" ]; then
-        echo "File $arch_img already exists in /tmp/ skipping download."
+   if [ -f "/$DOWNLOAD_DIR/$arch_img" ]; then
+        echo "File $arch_img already exists in /$DOWNLOAD_DIR/ skipping download."
     else
         echo "Latest Arch Linux file found: $arch_img"
-        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/tmp/$arch_img" "$arch_url$arch_img"
+        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/$DOWNLOAD_DIR/$arch_img" "$arch_url$arch_img"
         echo "Download complete: $arch_img"
     fi
 }
@@ -254,23 +257,23 @@ arch_img_phosh_sig() {
 
   echo "The img file is $arch_img and the sig file is ${arch_img}.sig"
 # Download arch signature file    
-    if [ -f /tmp/${arch_img}.sig ]; then
+    if [ -f /$DOWNLOAD_DIR/${arch_img}.sig ]; then
       echo "Signature file already available and I don't download it."
     else
       echo "I'm going to download signature files."
-    wget -q -P /tmp "${arch_url}${arch_img}.sig"
+    wget -q -P /$DOWNLOAD_DIR "${arch_url}${arch_img}.sig"
     fi
 
 # Add GPG key
 gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys F09A933C0FE0331E558CA4E166CAB7EAA45DD781
 
 # GPG check
-  if ( cd /tmp && gpg --verify "${arch_img}.sig" "${arch_img}" ); then
+  if ( cd /$DOWNLOAD_DIR && gpg --verify "${arch_img}.sig" "${arch_img}" ); then
         echo "GPG verification passed. Renaming file..."
 
         # Check if the file exist before to rename it
-        if [ -f "/tmp/$arch_img" ]; then
-            mv "/tmp/$arch_img" "/tmp/image.xz"
+        if [ -f "/$DOWNLOAD_DIR/$arch_img" ]; then
+            mv "/$DOWNLOAD_DIR/$arch_img" "/$DOWNLOAD_DIR/image.xz"
             
             # Check if the mv command status
             if [ $? -eq 0 ]; then
@@ -280,7 +283,7 @@ gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys F09A933C0FE0331E558CA4E1
                 exit 1
             fi
         else
-            echo "File to rename not found in /tmp."
+            echo "File to rename not found in /$DOWNLOAD_DIR."
             exit 1
         fi
     else
@@ -293,11 +296,11 @@ gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys F09A933C0FE0331E558CA4E1
 kali_nethunter_phosh_img() {
     kali_nethunter_img="$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1)"
     
-    if [ -f "/tmp/$kali_nethunter_img" ]; then
+    if [ -f "/$DOWNLOAD_DIR/$kali_nethunter_img" ]; then
         echo "Latest Kali Nethunter image founded and I don't need to download it."
       else
         echo "I'm going to download latest Kali Nethunter image:"
-        wget --progress=dot -c -d --timeout=60 --tries=3 "$kali_nethunter_url$kali_nethunter_img" -P /tmp
+        wget --progress=dot -c -d --timeout=60 --tries=3 "$kali_nethunter_url$kali_nethunter_img" -P /$DOWNLOAD_DIR
         echo "Download complete: $kali_nethunter_img"
     fi  
 }
@@ -306,20 +309,20 @@ kali_nethunter_phosh_img() {
 kali_nethunter_phosh_sig() {
 
 # Download SHA256SUMS    
-    if [ -f /tmp/SHA256SUMS ]; then
+    if [ -f /$DOWNLOAD_DIR/SHA256SUMS ]; then
       echo "Signature file already available and I don't download it."
     else
       echo "I'm going to download signature files."
-    wget -q -P /tmp "${kali_nethunter_url}SHA256SUMS"
+    wget -q -P /$DOWNLOAD_DIR "${kali_nethunter_url}SHA256SUMS"
     fi
 
 # SHA256SUM check
-  if ( cd /tmp && sha256sum -c SHA256SUMS ) |  grep -q "OK$"; then
+  if ( cd /$DOWNLOAD_DIR && sha256sum -c SHA256SUMS ) |  grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
         # Check if the file exist before to rename it
-        if [ -f "/tmp/$kali_nethunter_img" ]; then
-            mv "/tmp/$kali_nethunter_img" "/tmp/image.xz"
+        if [ -f "/$DOWNLOAD_DIR/$kali_nethunter_img" ]; then
+            mv "/$DOWNLOAD_DIR/$kali_nethunter_img" "/$DOWNLOAD_DIR/image.xz"
             
             # Check if the mv command status
             if [ $? -eq 0 ]; then
@@ -329,7 +332,7 @@ kali_nethunter_phosh_sig() {
                 exit 1
             fi
         else
-            echo "File to rename not found in /tmp."
+            echo "File to rename not found in /$DOWNLOAD_DIR."
             exit 1
         fi
     else
@@ -341,34 +344,34 @@ kali_nethunter_phosh_sig() {
 # Function to download the latest postmarketOS with Plasma Mobile
 postmarketOS_plasma_img() {
     
-    if [ -f "/tmp/$postmarketOS_plasma_img" ]; then
+    if [ -f "/$DOWNLOAD_DIR/$postmarketOS_plasma_img" ]; then
         echo "Latest postmarketOS with Plasma Mobile founded and I don't need to download it."
       else
         echo "I'm going to download latest postmarketOS with Plasma Mobile image:"
         echo "The download url is $postmarketOS_plasma_url$postmarketOS_plasma_img_date$postmarketOS_plasma_img"
-        wget --progress=dot -c -d --timeout=60 --tries=3 "$postmarketOS_plasma_url$postmarketOS_plasma_img_date$postmarketOS_plasma_img" -P /tmp
+        wget --progress=dot -c -d --timeout=60 --tries=3 "$postmarketOS_plasma_url$postmarketOS_plasma_img_date$postmarketOS_plasma_img" -P /$DOWNLOAD_DIR
         echo "Download complete: $postmarketOS_plasma_img"
     fi  
 }
 
-# Function to check postmarketOS signature
+# Function to check postmarketOS with Plasma Mobile signature
 postmarketOS_plasma_sig() {
 
 # Download SHA256SUMS    
-    if [ -f "/tmp/${postmarketOS_plasma_img}.sha512" ]; then
+    if [ -f "/$DOWNLOAD_DIR/${postmarketOS_plasma_img}.sha512" ]; then
       echo "Signature file already available and I don't download it."
     else
       echo "I'm going to download signature files."
-    wget -q -P /tmp "${postmarketOS_plasma_url}${postmarketOS_plasma_img_date}${postmarketOS_plasma_img}.sha512"
+    wget -q -P /$DOWNLOAD_DIR "${postmarketOS_plasma_url}${postmarketOS_plasma_img_date}${postmarketOS_plasma_img}.sha512"
     fi
 
 # SHA256SUM check
-  if ( cd /tmp && sha256sum -c SHA256SUMS ) |  grep -q "OK$"; then
+  if ( cd /$DOWNLOAD_DIR && sha256sum -c SHA256SUMS ) |  grep -q "OK$"; then
         echo "SHA256SUM verification passed. Renaming file..."
 
         # Check if the file exist before to rename it
-        if [ -f "/tmp/$postmarketOS_plasma_img" ]; then
-            mv "/tmp/$postmarketOS_plasma_img" "/tmp/image.xz"
+        if [ -f "/$DOWNLOAD_DIR/$postmarketOS_plasma_img" ]; then
+            mv "/$DOWNLOAD_DIR/$postmarketOS_plasma_img" "/$DOWNLOAD_DIR/image.xz"
             
             # Check if the mv command status
             if [ $? -eq 0 ]; then
@@ -378,7 +381,7 @@ postmarketOS_plasma_sig() {
                 exit 1
             fi
         else
-            echo "File to rename not found in /tmp."
+            echo "File to rename not found in /$DOWNLOAD_DIR."
             exit 1
         fi
     else
@@ -448,8 +451,8 @@ done
 
     # Write the image to the device
     echo "Writing image to /dev/$device_name wait few minutes..."
-    cat "/tmp/image.xz" | unxz -c > /tmp/image.img
-    sudo dd if=/tmp/image.img of=/dev/$device_name status=progress bs=4M conv=fdatasync iflag=sync
+    cat "/$DOWNLOAD_DIR/image.xz" | unxz -c > /$DOWNLOAD_DIR/image.img
+    sudo dd if=/$DOWNLOAD_DIR/image.img of=/dev/$device_name status=progress bs=4M conv=fdatasync iflag=sync
     echo "Writing process complete."
 
     # Ensure script exits after burning process
