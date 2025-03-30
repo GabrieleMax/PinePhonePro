@@ -351,6 +351,42 @@ postmarketOS_plasma_img() {
     fi  
 }
 
+# Function to check postmarketOS signature
+postmarketOS_plasma_sig() {
+
+# Download SHA256SUMS    
+    if [ -f "/tmp/${postmarketOS_plasma_img}.sha512" ]; then
+      echo "Signature file already available and I don't download it."
+    else
+      echo "I'm going to download signature files."
+    wget -q -P /tmp "${postmarketOS_plasma_url}${postmarketOS_plasma_img_date}${postmarketOS_plasma_img}.sha512"
+    fi
+
+# SHA256SUM check
+  if ( cd /tmp && sha256sum -c SHA256SUMS ) |  grep -q "OK$"; then
+        echo "SHA256SUM verification passed. Renaming file..."
+
+        # Check if the file exist before to rename it
+        if [ -f "/tmp/$postmarketOS_plasma_img" ]; then
+            mv "/tmp/$postmarketOS_plasma_img" "/tmp/image.xz"
+            
+            # Check if the mv command status
+            if [ $? -eq 0 ]; then
+                echo "File renamed to image.xz"
+            else
+                echo "Error: Failed to rename the file."
+                exit 1
+            fi
+        else
+            echo "File to rename not found in /tmp."
+            exit 1
+        fi
+    else
+        echo "Signature failed: SHA256SUM verification did not pass."
+        exit 1
+    fi
+}
+
 devicecheck() {
 # Display the initial message
 echo -e "\n\nConnect the PinePhone Pro and after it press the volume up button until the LED turns blue or insert the microsd:"
@@ -455,7 +491,7 @@ select menu in "Download and install Mobian testing with Plasma mobile" \
             ;;
         "Download and install postmarketOS with Plasma Mobile")
             postmarketOS_plasma_img
-            #postmarketOS_plasma_sig
+            postmarketOS_plasma_sig
             devicecheck
             img_burn
             ;;
