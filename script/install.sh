@@ -55,8 +55,8 @@ done
 echo "Internet is avalaible and I can continue the script."
 
 # Retrieve the list of downloadable files from the websites, sort them, and take the latest one
-deb_testing_phosh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-installer-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
-deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-installer-rockchip-plasma-mobile-\d{8}\.img\.xz' | sort -r | head -n 1)
+deb_testing_phosh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
+deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-plasma-mobile-\d{8}\.img\.xz' | sort -r | head -n 1)
 #kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}\.\d{2}-pinephonepro\.img\.xz' | sort -r | head -n 1)
 #kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
 #kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
@@ -85,9 +85,9 @@ deb_img_testing_phosh() {
 
 # Function to check Mobian testing image with phosh for PinePhone Pro signature
 deb_img_testing_phosh_sig() {
-    deb_testing_phosh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.sha256sums' | sort -r | head -n 1)
-    deb_testing_phosh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
-    deb_testing_phosh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-phosh-\d{8}.img.bmap' | sort -r | head -n 1)
+    deb_testing_phosh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.sha256sums' | sort -r | head -n 1)
+    deb_testing_phosh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
+    deb_testing_phosh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.img.bmap' | sort -r | head -n 1)
     
     if [ -f /$DOWNLOAD_DIR/$deb_testing_phosh_shasums ] && [ -f /$DOWNLOAD_DIR/$deb_testing_phosh_shasig ] && [ -f /$DOWNLOAD_DIR/$deb_testing_phosh_imgbmap ]; then
       echo "Signature files already available and I don't download them."
@@ -175,9 +175,9 @@ deb_img_testing_plasma() {
 
 # Function to check Mobian testing image with Plasma for PinePhone Pro signature
 deb_img_testing_plasma_sig() {
-    deb_testing_plasma_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums' | sort -r | head -n 1)
-    deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
-    deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-installer-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
+    deb_testing_plasma_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.sha256sums' | sort -r | head -n 1)
+    deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
+    deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
     
     if [ -f /$DOWNLOAD_DIR/$deb_testing_plasma_shasums ] && [ -f /$DOWNLOAD_DIR/$deb_testing_plasma_shasig ] && [ -f /$DOWNLOAD_DIR/$deb_testing_plasma_imgbmap ]; then
       echo "Signature files already available and I don't download them."
