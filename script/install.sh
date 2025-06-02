@@ -9,8 +9,6 @@ cat splash_screen.txt
 DOWNLOAD_DIR=/tmp
 
 # URLs for different operating systems
-deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/raw/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
-deb_testing_url="https://images.mobian.org/pinephonepro/weekly/"
 arch_img=$(curl -s https://github.com/dreemurrs-embedded/Pine64-Arch/releases/ | grep -o "archlinux-pinephone-pro-phosh-[0-9]\+.img.xz" | sort -r | head -n 1)
 arch_img_date=$(echo $arch_img | grep -o '[0-9]\+')
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/download/${arch_img_date}/"
@@ -53,193 +51,6 @@ while ! ping -c 1 8.8.8.8 &> /dev/null; do
 done
 
 echo "Internet is avalaible and I can continue the script."
-
-# Retrieve the list of downloadable files from the websites, sort them, and take the latest one
-deb_testing_phosh=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-phosh-\d{8}.img.xz' | sort -r | head -n 1)
-deb_testing_plasma=$(curl -s "$deb_testing_url" | grep -oP '(?<=href=")mobian-rockchip-plasma-mobile-\d{8}\.img\.xz' | sort -r | head -n 1)
-#kali_nethunter=$(wget -q -O - "$kali_nethunter_url" | grep -oP 'kali-nethunterpro-\d{4}\.\d{2}-pinephonepro\.img\.xz' | sort -r | head -n 1)
-#kali_nethunter=$(curl -O ${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephonepro\.img\.xz' | sort -r | head -n 1))
-#kali_nethunter="${kali_nethunter_url}$(curl -s ${kali_nethunter_url} | grep -oP 'kali-nethunterpro-\d{4}\.\d{1,2}-pinephone\.img\.xz' | sort -r | head -n 1)"
-
-# Function to download Mobian testing image with Phosh for PinePhone Pro
-deb_img_testing_phosh() {
-    if [ -z "$deb_testing_phosh" ]; then
-        echo "The variable deb_testing_posh is empty."
-        return 1  # Termina solo la funzione, lo script continua
-    fi  
-
-    if [ -f "/$DOWNLOAD_DIR/$deb_testing_phosh" ]; then
-        echo "File already exists in /$DOWNLOAD_DIR/. Skipping download."
-    else
-        echo "Latest file found: $deb_testing_phosh"
-        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/$DOWNLOAD_DIR/$deb_testing_phosh" "$deb_testing_url$deb_testing_phosh"
-
-        if [ $? -eq 0 ]; then
-            echo "Download complete: $deb_testing_phosh"
-        else
-            echo "Download failed."
-            return 1
-        fi
-    fi
-}
-
-# Function to check Mobian testing image with phosh for PinePhone Pro signature
-deb_img_testing_phosh_sig() {
-    deb_testing_phosh_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.sha256sums' | sort -r | head -n 1)
-    deb_testing_phosh_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.sha256sums.sig' | sort -r | head -n 1)
-    deb_testing_phosh_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-phosh-\d{8}.img.bmap' | sort -r | head -n 1)
-    
-    if [ -f /$DOWNLOAD_DIR/$deb_testing_phosh_shasums ] && [ -f /$DOWNLOAD_DIR/$deb_testing_phosh_shasig ] && [ -f /$DOWNLOAD_DIR/$deb_testing_phosh_imgbmap ]; then
-      echo "Signature files already available and I don't download them."
-    else
-      echo "I'm going to download signature files."
-    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_phosh_shasums"
-    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_phosh_shasig"
-    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_phosh_imgbmap"
-    fi
-
-# GPG download and import key
-if [ -z "$deb_keyring" ]; then
-    echo "Debian keyring variable URL not available"
-    exit 1
-  else
-    if [ ! -f "/$DOWNLOAD_DIR/mobian-archive-keyring.gpg" ]; then
-      echo "I'm going to download Debian keyring"
-      wget -q -P /$DOWNLOAD_DIR "$deb_keyring"
-    #gpg --import mobian-archive-keyring.gpg
-    #gpg --list-keys --with-colons | grep "$(gpg --with-colons --import-options show-only --import mobian-archive-keyring.gpg | grep '^fpr' | cut -d: -f10)"
-      else
-        echo "Debian keyring already present"
-    fi
-    # GPG check key
-    if gpg --verify "/$DOWNLOAD_DIR/$deb_testing_phosh_shasig" >/dev/null 2>&1; then
-        echo "Valid GPG signature"
-    else
-        echo "GPG signature not valid"
-        exit 1
-    fi
-fi
-
-# SHA256SUM check
-#( cd /$DOWNLOAD_DIR && sha256sum -c "$deb_testing_plasma_shasums" )
-if [ ! -f "/$DOWNLOAD_DIR/$deb_testing_phosh" ]; then
-  echo "Image not avalaible"
-  exit 1
-else
-    if ( cd /$DOWNLOAD_DIR && sha256sum -c "$deb_testing_phosh_shasums" ) |  grep -q "OK$"; then
-        echo "SHA256SUM verification passed. Renaming file..."
-
-        # Verifica se il file esiste prima di spostarlo
-        if [ -f "/$DOWNLOAD_DIR/$deb_testing_phosh" ]; then
-            mv "/$DOWNLOAD_DIR/$deb_testing_phosh" "/$DOWNLOAD_DIR/image.xz"
-            
-            # Controlla se mv ha avuto successo
-            if [ $? -eq 0 ]; then
-                echo "File renamed to image.xz"
-            else
-                echo "Error: Failed to rename the file."
-                exit 1
-            fi
-        else
-            echo "File to rename not found in /$DOWNLOAD_DIR."
-            exit 1
-        fi
-    else
-        echo "Signature failed: SHA256SUM verification did not pass."
-        exit 1
-    fi
-fi
-}
-
-# Function to download Mobian testing image with Plasma for PinePhone Pro
-deb_img_testing_plasma() {
-    if [ -z "$deb_testing_plasma" ]; then
-        echo "File not found."
-        return 1  # Termina solo la funzione, lo script continua
-    fi  
-
-    if [ -f "/$DOWNLOAD_DIR/$deb_testing_plasma" ]; then
-        echo "File already exists in /$DOWNLOAD_DIR/. Skipping download."
-    else
-        echo "Latest file found: $deb_testing_plasma"
-        wget --progress=dot -c -d --timeout=60 --tries=3 -O "/$DOWNLOAD_DIR/$deb_testing_plasma" "$deb_testing_url$deb_testing_plasma"
-
-        if [ $? -eq 0 ]; then
-            echo "Download complete: $deb_testing_plasma"
-        else
-            echo "Download failed."
-            return 1
-        fi
-    fi
-}
-
-# Function to check Mobian testing image with Plasma for PinePhone Pro signature
-deb_img_testing_plasma_sig() {
-    deb_testing_plasma_shasums=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.sha256sums' | sort -r | head -n 1)
-    deb_testing_plasma_shasig=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.sha256sums.sig' | sort -r | head -n 1)
-    deb_testing_plasma_imgbmap=$(curl -s "$deb_testing_url" | grep -oP 'mobian-rockchip-plasma-mobile-\d{8}.img.bmap' | sort -r | head -n 1)
-    
-    if [ -f /$DOWNLOAD_DIR/$deb_testing_plasma_shasums ] && [ -f /$DOWNLOAD_DIR/$deb_testing_plasma_shasig ] && [ -f /$DOWNLOAD_DIR/$deb_testing_plasma_imgbmap ]; then
-      echo "Signature files already available and I don't download them."
-    else
-      echo "I'm going to download signature files."
-    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_plasma_shasums"
-    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_plasma_shasig"
-    wget -q -P /$DOWNLOAD_DIR "$deb_testing_url$deb_testing_plasma_imgbmap"
-    fi
-
-# GPG download and import key
-if [ -z "$deb_keyring" ]; then
-    echo "Debian keyring variable URL not available"
-    exit 1
-  else
-    if [ ! -f "/$DOWNLOAD_DIR/mobian-archive-keyring.gpg" ]; then
-      echo "I'm going to download Debian keyring"
-      wget -q -P /$DOWNLOAD_DIR "$deb_keyring"
-    #gpg --import mobian-archive-keyring.gpg
-    #gpg --list-keys --with-colons | grep "$(gpg --with-colons --import-options show-only --import mobian-archive-keyring.gpg | grep '^fpr' | cut -d: -f10)"
-      else
-        echo "Debian keyring already present"
-    fi
-    # GPG check key
-    if gpg --verify "/$DOWNLOAD_DIR/$deb_testing_plasma_shasig" >/dev/null 2>&1; then
-        echo "Valid GPG signature"
-    else
-        echo "GPG signature not valid"
-        exit 1
-    fi
-fi
-
-# SHA256SUM check
-#( cd /$DOWNLOAD_DIR && sha256sum -c "$deb_testing_plasma_shasums" )
-if [ ! -f "/$DOWNLOAD_DIR/$deb_testing_plasma" ]; then
-  echo "Image not avalaible"
-  exit 1
-else
-  if ( cd /$DOWNLOAD_DIR && sha256sum -c "$deb_testing_plasma_shasums" 2>/dev/null ) |  grep -q "OK$"; then
-        echo "SHA256SUM verification passed. Renaming file..."
-
-        # Check if the file exist before to rename it
-        if [ -f "/$DOWNLOAD_DIR/$deb_testing_plasma" ]; then
-            mv "/$DOWNLOAD_DIR/$deb_testing_plasma" "/$DOWNLOAD_DIR/image.xz"
-            
-            # Check if the mv command status
-            if [ $? -eq 0 ]; then
-                echo "File renamed to image.xz"
-            else
-                echo "Error: Failed to rename the file."
-                exit 1
-            fi
-        else
-            echo "File to rename not found in /$DOWNLOAD_DIR."
-            exit 1
-        fi
-    else
-        echo "Signature failed: SHA256SUM verification did not pass."
-        exit 1
-    fi
-fi
-}
 
 # Function to download the latest Arch Linux image for PinePhone Pro
 arch_img_phosh() {
@@ -460,51 +271,99 @@ done
 }
 
 # Menu with the correct options
-PS3="Choose an option (1-6): "
-select menu in "Download and install Mobian testing with Plasma mobile" \
-               "Download and install Mobian testing with Phosh mobile" \
-               "Download and install Arch Linux with Phosh" \
-               "Download and install Kali Nethunter Linux with Phosh" \
-               "Download and install postmarketOS with Plasma Mobile" \
-               "Exit"; do
-    case $menu in
-        "Download and install Mobian testing with Plasma mobile")
-            deb_img_testing_plasma 
-            deb_img_testing_plasma_sig
-            devicecheck
-            img_burn 
-            ;;
-        "Download and install Mobian testing with Phosh mobile")
-            deb_img_testing_phosh
-            deb_img_testing_phosh_sig
-            devicecheck
-            img_burn 
-            ;;
-       "Download and install Arch Linux with Phosh")
+PS3="Choose an option (1-5): "
+options=(
+  "Download and install Mobian testing" 
+  "Download and install Arch Linux with Phosh" 
+  "Download and install Kali Nethunter Linux with Phosh" 
+  "Download and install postmarketOS with Plasma Mobile" 
+  "Exit"
+)
+
+select choice in "${options[@]}"; do
+    case "$choice" in
+        "Download and install Mobian testing")
+            echo "Choose environment:"
+            echo "1) Phosh"
+            echo "2) Plasma Mobile"
+            read -rp "Enter your choice [1-2]: " env_choice
+            case $env_choice in
+                1)  
+                    echo "Phosh selected. Choose action:"
+                    echo "1) Download image with installation wizard"
+                    echo "2) Download image without installation wizard"
+                    read -rp "Enter your choice [1-2]: " action_choice
+                    case $action_choice in
+                        1)
+                            # Azioni per Phosh - Download image without installation wizard
+                            mob_img_testing_phosh
+                            mob_img_testing_phosh_sig
+                            ;;
+                        2)
+                            # Azioni per Phosh - Download image without installation wizard install
+                            devicecheck
+                            img_burn
+                            ;;
+                        *)
+                            echo "Invalid choice."
+                            ;;
+                    esac
+                    ;;
+                2)  
+                    echo "Plasma Mobile selected. Choose action:"
+                    echo "1) Download image with installation wizard"
+                    echo "2) Download image without installation wizard"
+                    read -rp "Enter your choice [1-2]: " action_choice
+                    case $action_choice in
+                        1)
+                            # Azioni per Plasma - Download image without installation wizard
+                            mob_img_testing_plasma
+                            mob_img_testing_plasma_sig
+                            ;;
+                        2)
+                            # Azioni per Plasma - Download image without installation wizard install
+                            devicecheck
+                            img_burn
+                            ;;
+                        *)
+                            echo "Invalid choice."
+                            ;;
+                    esac
+                    ;;
+                *)
+                    echo "Invalid choice."
+                    ;;
+            esac
+            ;;     
+        "Download and install Arch Linux with Phosh")
             arch_img_phosh
             arch_img_phosh_sig
             devicecheck
-            img_burn 
+            img_burn
             ;;
+
         "Download and install Kali Nethunter Linux with Phosh")
             kali_nethunter_phosh_img
             kali_nethunter_phosh_sig
             devicecheck
             img_burn
             ;;
+
         "Download and install postmarketOS with Plasma Mobile")
             postmarketOS_plasma_img
             postmarketOS_plasma_sig
             devicecheck
             img_burn
             ;;
+
         "Exit")
             echo "Exiting the script."
             break
             ;;
+
         *)
             echo "Invalid choice. Please try again."
             ;;
-    esac
+    esac                                                                                                                                                                                     
 done
 
