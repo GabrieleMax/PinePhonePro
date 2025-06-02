@@ -10,7 +10,7 @@ DOWNLOAD_DIR=/tmp
 
 # URLs for different operating systems
 deb_keyring="https://salsa.debian.org/Mobian-team/mobian-keyring/-/raw/509d5fae1ac9bb1aa8e9d9bd446dbac3f9588c49/mobian-archive-keyring.gpg"
-deb_testing_url="https://images.mobian.org/pinephonepro/installer/weekly/"
+deb_testing_url="https://images.mobian.org/pinephonepro/weekly/"
 arch_img=$(curl -s https://github.com/dreemurrs-embedded/Pine64-Arch/releases/ | grep -o "archlinux-pinephone-pro-phosh-[0-9]\+.img.xz" | sort -r | head -n 1)
 arch_img_date=$(echo $arch_img | grep -o '[0-9]\+')
 arch_url="https://github.com/dreemurrs-embedded/Pine64-Arch/releases/download/${arch_img_date}/"
