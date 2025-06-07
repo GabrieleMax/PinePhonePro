@@ -280,7 +280,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Menu principale
-PS3="Choose an option (1-2): "
+PS3="Choose an option (1-3): "
 options=(
   "Download and install operative system"
   "Deploy configurations to the device"
@@ -372,7 +372,7 @@ select choice in "${options[@]}"; do
             ;;     
         "Deploy configurations to the device")
             echo -e "${YELLOW}Deploying configuration to the device...${NC}"
-            deploy_configurations
+            make --no-print-directory -C ../pinephonepro deploy
             ;;
 
         "Exit")
