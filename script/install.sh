@@ -1,6 +1,9 @@
 #!/bin/bash
 ## Run as sudo or root                                    
 
+# Load functions to external files
+source mobian.sh
+
 # Display the ASCII splashscreen
 echo -e "\n\n"
 cat splash_screen.txt  
