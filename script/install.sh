@@ -270,90 +270,106 @@ done
     exit 0
 }
 
-# Menu with the correct options
-PS3="Choose an option (1-5): "
+#!/bin/bash
+
+# Colori
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Menu principale
+PS3="Choose an option (1-2): "
 options=(
-  "Download and install Mobian testing" 
-  "Download and install Arch Linux with Phosh" 
-  "Download and install Kali Nethunter Linux with Phosh" 
-  "Download and install postmarketOS with Plasma Mobile" 
+  "Download and install operative system"
+  "Deploy configurations to the device"
   "Exit"
 )
 
+# Menu selections
 select choice in "${options[@]}"; do
     case "$choice" in
-        "Download and install Mobian testing")
-            echo "Choose environment:"
-            echo "1) Phosh"
-            echo "2) Plasma Mobile"
-            read -rp "Enter your choice [1-2]: " env_choice
-            case $env_choice in
-                1)  
-                    echo "Phosh selected. Choose action:"
-                    echo "1) Download image with installation wizard"
-                    echo "2) Download image without installation wizard"
-                    read -rp "Enter your choice [1-2]: " action_choice
-                    case $action_choice in
-                        1)
-                            # Azioni per Phosh - Download image without installation wizard
-                            mob_img_testing_phosh
-                            mob_img_testing_phosh_sig
+      "Download and install operative system")  
+            echo -e "${YELLOW}Choose a system to install:${NC}"
+            echo "1) Download and install Mobian testing" 
+            echo "2) Download and install Arch Linux with Phosh" 
+            echo "3) Download and install Kali Nethunter Linux with Phosh" 
+            echo "4) Download and install postmarketOS with Plasma Mobile" 
+            read -rp "Enter your choice [1-4]: " os_choice
+            case $os_choice in
+                1)
+                    echo -e "${YELLOW}Choose environment:${NC}"
+                    echo "1) Phosh"
+                    echo "2) Plasma Mobile"
+                    read -rp "Enter your choice [1-2]: " env_choice
+                    case $env_choice in
+                        1)  
+                            echo -e "${YELLOW}Phosh selected. Choose image type:${NC}"
+                            echo "1) Download image with installation wizard"
+                            echo "2) Download image without installation wizard"
+                            read -rp "Enter your choice [1-2]: " action_choice
+                            case $action_choice in
+                                1)
+                                    mob_img_testing_phosh
+                                    mob_img_testing_phosh_sig
+                                    ;;
+                                2)
+                                    devicecheck
+                                    img_burn
+                                    ;;
+                                *)
+                                    echo "Invalid choice."
+                                    ;;
+                            esac
                             ;;
-                        2)
-                            # Azioni per Phosh - Download image without installation wizard install
-                            devicecheck
-                            img_burn
+                        2)  
+                            echo -e "${YELLOW}Plasma Mobile selected. Choose image type:${NC}"
+                            echo "1) Download image with installation wizard"
+                            echo "2) Download image without installation wizard"
+                            read -rp "Enter your choice [1-2]: " action_choice
+                            case $action_choice in
+                                1)
+                                    mob_img_testing_plasma
+                                    mob_img_testing_plasma_sig
+                                    ;;
+                                2)
+                                    devicecheck
+                                    img_burn
+                                    ;;
+                                *)
+                                    echo "Invalid choice."
+                                    ;;
+                            esac
                             ;;
                         *)
                             echo "Invalid choice."
                             ;;
                     esac
                     ;;
-                2)  
-                    echo "Plasma Mobile selected. Choose action:"
-                    echo "1) Download image with installation wizard"
-                    echo "2) Download image without installation wizard"
-                    read -rp "Enter your choice [1-2]: " action_choice
-                    case $action_choice in
-                        1)
-                            # Azioni per Plasma - Download image without installation wizard
-                            mob_img_testing_plasma
-                            mob_img_testing_plasma_sig
-                            ;;
-                        2)
-                            # Azioni per Plasma - Download image without installation wizard install
-                            devicecheck
-                            img_burn
-                            ;;
-                        *)
-                            echo "Invalid choice."
-                            ;;
-                    esac
+                2)
+                    arch_img_phosh
+                    arch_img_phosh_sig
+                    devicecheck
+                    img_burn
+                    ;;
+                3)
+                    kali_nethunter_phosh_img
+                    kali_nethunter_phosh_sig
+                    devicecheck
+                    img_burn
+                    ;;
+                4)
+                    postmarketOS_plasma_img
+                    postmarketOS_plasma_sig
+                    devicecheck
+                    img_burn
                     ;;
                 *)
                     echo "Invalid choice."
                     ;;
             esac
             ;;     
-        "Download and install Arch Linux with Phosh")
-            arch_img_phosh
-            arch_img_phosh_sig
-            devicecheck
-            img_burn
-            ;;
-
-        "Download and install Kali Nethunter Linux with Phosh")
-            kali_nethunter_phosh_img
-            kali_nethunter_phosh_sig
-            devicecheck
-            img_burn
-            ;;
-
-        "Download and install postmarketOS with Plasma Mobile")
-            postmarketOS_plasma_img
-            postmarketOS_plasma_sig
-            devicecheck
-            img_burn
+        "Deploy configurations to the device")
+            echo -e "${YELLOW}Deploying configuration to the device...${NC}"
+            deploy_configurations
             ;;
 
         "Exit")
@@ -364,6 +380,8 @@ select choice in "${options[@]}"; do
         *)
             echo "Invalid choice. Please try again."
             ;;
-    esac                                                                                                                                                                                     
+    esac
 done
+
+
 
